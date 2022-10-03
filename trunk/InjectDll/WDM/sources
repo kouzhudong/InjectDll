@@ -1,0 +1,16 @@
+TARGETNAME=test
+
+TARGETTYPE=DRIVER
+
+TARGETLIBS=$(DDK_LIB_PATH)\ksecdd.lib \
+           $(DDK_LIB_PATH)\Aux_klib.lib
+
+SOURCES=test.C \
+        rc.rc
+
+AMD64_SOURCES=.\amd64\amd64.asm 
+
+TARGETPATH=obj 
+
+MSC_OPTIMIZATION=/Od /Oi
+
