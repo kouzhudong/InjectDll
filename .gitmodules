@@ -1,0 +1,3 @@
+[submodule "trunk/InjectDll/libdrv"]
+	path = trunk/InjectDll/libdrv
+	url = https://github.com/kouzhudong/libdrv.git
