@@ -194,10 +194,13 @@ VOID ProcessNotifyRoutine(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOL
 
     if (Create) {
         PPROCESS_CONTEXT Context = (PPROCESS_CONTEXT)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_CONTEXT), TAG);
-        ASSERT(Context);
-        Context->Pid = ProcessId;
-
-        InsertProcessContext(Context);
+        if (Context) {
+            RtlZeroMemory(Context, sizeof(PROCESS_CONTEXT));
+            Context->Pid = ProcessId;
+            InsertProcessContext(Context);
+        } else {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "%s", "ExAllocatePoolWithTag Fail");
+        }
     } else {
         PPROCESS_CONTEXT Context = GetProcessContext(ProcessId);
         if (Context) {
