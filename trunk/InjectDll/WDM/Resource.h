@@ -7,8 +7,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-extern UNICODE_STRING g_us_FullDllPathName;
-extern UNICODE_STRING g_us_FullDllPathNameWow64;
+extern UNICODE_STRING g_DllDosFullPath;
+extern UNICODE_STRING g_DllDosFullPathWow64;
 
 extern PUNICODE_STRING g_RegistryPath;
 

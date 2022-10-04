@@ -140,21 +140,21 @@ VOID InitialUserRoutine(PCLIENT_ID ClientId, PSIZE_T UserApcCallbackAddr)
                                    &Handle);
     ASSERT(NT_SUCCESS(status));
 
-    SIZE_T size = 0;
+    SIZE_T Size = 0;
 
     if (((SIZE_T)ApcCallbackEnd - (SIZE_T)ApcCallback) > 0) {
-        size = (SIZE_T)ApcCallbackEnd - (SIZE_T)ApcCallback;
+        Size = (SIZE_T)ApcCallbackEnd - (SIZE_T)ApcCallback;
     } else {
-        size = (SIZE_T)ApcCallback - (SIZE_T)ApcCallbackEnd;
+        Size = (SIZE_T)ApcCallback - (SIZE_T)ApcCallbackEnd;
     }
 
-    SIZE_T CodeSize = size;
+    SIZE_T CodeSize = Size;
 
     PVOID BaseAddress = 0;//必须制定为0，否则返回参数错误。 
     status = ZwAllocateVirtualMemory(Handle  /*NtCurrentProcess()*/,
                                      &BaseAddress,
                                      0,
-                                     &size,
+                                     &Size,
                                      MEM_COMMIT,
                                      PAGE_EXECUTE_READWRITE);
     if (!NT_SUCCESS(status)) {
@@ -202,11 +202,11 @@ smss.exe只有ntll.dll和自身，没有kernel32.dll，这是个native程序。
                                    &Handle);
     ASSERT(NT_SUCCESS(status));
 
-    SIZE_T size = sizeof(PassToUser);
-    SIZE_T CodeSize = size;
+    SIZE_T Size = sizeof(PassToUser);
+    SIZE_T CodeSize = Size;
 
     PVOID BaseAddress = 0;//必须制定为0，否则返回参数错误。  
-    status = ZwAllocateVirtualMemory(Handle, &BaseAddress, 0, &size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    status = ZwAllocateVirtualMemory(Handle, &BaseAddress, 0, &Size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     if (!NT_SUCCESS(status)) {
         Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", status);
         ObDereferenceObject(Process);
@@ -220,7 +220,7 @@ smss.exe只有ntll.dll和自身，没有kernel32.dll，这是个native程序。
     __try {//注意：处理过程中，进程可能会退出。
         RtlZeroMemory(BaseAddress, CodeSize);
         PPassToUser pUserData = (PPassToUser)BaseAddress;
-        pUserData->RegionSize = size;
+        pUserData->RegionSize = Size;
 
         PPEB ppeb = PsGetProcessPeb(Process);//注意：IDLE和system这两个应该获取不到。
         if (ppeb && ppeb->Ldr) {//进程启动时，Ldr为空。
@@ -270,7 +270,7 @@ smss.exe只有ntll.dll和自身，没有kernel32.dll，这是个native程序。
         }
 
         if (IsProcessPe64(UniqueProcess)) {
-            RtlCopyMemory(pUserData->FullDllPathName, g_us_FullDllPathName.Buffer, g_us_FullDllPathName.Length);
+            RtlCopyMemory(pUserData->FullDllPathName, g_DllDosFullPath.Buffer, g_DllDosFullPath.Length);
         } else {
 
         }
@@ -427,7 +427,6 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
 注意：支持X64，X86，以及WOW64.
 */
 {
-    BOOL IsProcess64 = IsProcessPe64(UniqueProcess);
     PEPROCESS Process = NULL;
     HANDLE  Handle = 0;
     PVOID DllFullPath = NULL;//必须制定为0，否则返回参数错误。 
@@ -445,26 +444,21 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
             __leave;
         }
 
-        SIZE_T size = 0;
-    #ifdef _WIN64
-        if (IsProcess64) {
-            size = g_us_FullDllPathName.Length;
-        } else {//WOW64.
-            size = g_us_FullDllPathNameWow64.Length;
+        SIZE_T Size = 0;
+        if (IsWow64Process(UniqueProcess)) {
+            Size = g_DllDosFullPathWow64.Length;            
+        } else {
+            Size = g_DllDosFullPath.Length;
         }
-    #else
-        size = g_us_FullDllPathName.Length;
-    #endif
-
-        if (0 == size) {
-            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "size == 0, pid:%d", HandleToULong(UniqueProcess));
+        if (0 == Size) {
+            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Size == 0, pid:%d", HandleToULong(UniqueProcess));
             __leave;
         }
 
-        status = ZwAllocateVirtualMemory(Handle, &DllFullPath, 0, &size, MEM_COMMIT, PAGE_READWRITE);
+        status = ZwAllocateVirtualMemory(Handle, &DllFullPath, 0, &Size, MEM_COMMIT, PAGE_READWRITE);
         if (!NT_SUCCESS(status)) {//如果是PAGE_EXECUTE_READWRITE会出现STATUS_DYNAMIC_CODE_BLOCKED.
-            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, size:%lld",
-                  status, HandleToULong(UniqueProcess), size);
+            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, Size:%lld",
+                  status, HandleToULong(UniqueProcess), Size);
             __leave;
         }
 
@@ -472,15 +466,11 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
         KeStackAttachProcess(Process, &ApcState);
 
         __try {
-        #ifdef _WIN64
-            if (IsProcess64) {
-                RtlCopyMemory(DllFullPath, g_us_FullDllPathName.Buffer, g_us_FullDllPathName.Length);
-            } else {//WOW64.
-                RtlCopyMemory(DllFullPath, g_us_FullDllPathNameWow64.Buffer, g_us_FullDllPathNameWow64.Length);
+            if (IsWow64Process(UniqueProcess)) {
+                RtlCopyMemory(DllFullPath, g_DllDosFullPathWow64.Buffer, g_DllDosFullPathWow64.Length);                
+            } else { 
+                RtlCopyMemory(DllFullPath, g_DllDosFullPath.Buffer, g_DllDosFullPath.Length);
             }
-        #else
-            RtlCopyMemory(DllFullPath, g_us_FullDllPathName.Buffer, g_us_FullDllPathName.Length);
-        #endif
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "ExceptionCode:%#X", GetExceptionCode());
         }

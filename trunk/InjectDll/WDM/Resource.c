@@ -2,8 +2,8 @@
 #include "..\libdrv\inc\lib.h"
 
 
-UNICODE_STRING g_us_FullDllPathName;//被注入DLL的全路径(DOS格式)。
-UNICODE_STRING g_us_FullDllPathNameWow64;
+UNICODE_STRING g_DllDosFullPath;//被注入DLL的全路径(DOS格式)。
+UNICODE_STRING g_DllDosFullPathWow64;
 
 
 PUNICODE_STRING g_RegistryPath;
@@ -268,26 +268,26 @@ void BuildDLL()
     UNICODE_STRING Dll = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\dll.dll");
     UNICODE_STRING DllWow64 = RTL_CONSTANT_STRING(L"\\SystemRoot\\SysWOW64\\dll.dll");
 
-    UNICODE_STRING Dos = {0};
-    UNICODE_STRING DosWow64 = {0};
+    UNICODE_STRING NtPath = {0};
+    UNICODE_STRING NtPathWow64 = {0};
 
-    GetSystemRootName(&Dll, &Dos, &g_us_FullDllPathName);
+    GetSystemRootName(&Dll, &NtPath, &g_DllDosFullPath);
 
     /*
     可以把把DLL内嵌在SYS的资源里面，然后用：LdrFindResource_U/LdrAccessResource/LdrEnumResources等函数获取，然后在ZwCreateFile一个。
     */
 
 #ifdef _WIN64
-    GetSystemRootName(&DllWow64, &DosWow64, &g_us_FullDllPathNameWow64);
+    GetSystemRootName(&DllWow64, &NtPathWow64, &g_DllDosFullPathWow64);
 #endif  
 
-    ExtraFile("test.sys", RT_RCDATA, 5009, &g_us_FullDllPathName);
+    ExtraFile("test.sys", RT_RCDATA, 5009, &NtPath);
 #ifdef _WIN64
-    ExtraFile("test.sys", RT_RCDATA, 5010, &g_us_FullDllPathNameWow64);
+    ExtraFile("test.sys", RT_RCDATA, 5010, &NtPathWow64);
 #endif    
 
-    FreeUnicodeString(&Dos);
+    FreeUnicodeString(&NtPath);
 #ifdef _WIN64
-    FreeUnicodeString(&DosWow64);
+    FreeUnicodeString(&NtPathWow64);
 #endif  
 }

@@ -66,8 +66,14 @@ VOID Unload(__in PDRIVER_OBJECT DriverObject)
 
     RemoveProcessContextList();
 
-    FreeUnicodeString(&g_us_FullDllPathName);
-    FreeUnicodeString(&g_us_FullDllPathNameWow64);
+    FreeUnicodeString(&g_DllDosFullPath);
+    FreeUnicodeString(&g_DllDosFullPathWow64);
+
+    FreeUnicodeString(&g_Ntkernel32Path);
+    FreeUnicodeString(&g_DosKernel32Path);
+
+    FreeUnicodeString(&g_NtkernelWow64Path);
+    FreeUnicodeString(&g_DosKernelWow64Path);
 }
 
 
@@ -83,18 +89,18 @@ NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_ST
     //  Default to NonPagedPoolNx for non paged pool allocations where supported.   
     ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
 
-    //warning C28131: The DriverEntry routine should save a copy of the argument RegistryPath, not the pointer, 
-    //since the I/O Manager frees the buffer after DriverEntry returns.
-    g_RegistryPath = RegistryPath;
-
-#if DBG 
-    DriverObject->DriverUnload = Unload;//禁止卸载。
-#endif
+    DriverObject->DriverUnload = Unload;
 
     init();
 
     __try {
         Status = PsSetCreateProcessNotifyRoutine(ProcessNotifyRoutine, FALSE);
+        if (!NT_SUCCESS(Status)) {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
+            __leave;
+        }        
+
+        Status = PsSetCreateThreadNotifyRoutine(ThreadNotifyRoutine);
         if (!NT_SUCCESS(Status)) {
             PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
             __leave;
@@ -106,13 +112,7 @@ NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_ST
             __leave;
         }
 
-        Status = PsSetCreateThreadNotifyRoutine(ThreadNotifyRoutine);
-        if (!NT_SUCCESS(Status)) {
-            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
-            __leave;
-        }
-
-        InjectAllProcess();
+        InjectAllProcess();//不建议检查返回值。
     } __finally {
         if (!NT_SUCCESS(Status)) {
             Unload(DriverObject);

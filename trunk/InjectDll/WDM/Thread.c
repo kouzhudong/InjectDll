@@ -26,21 +26,21 @@ VOID FreeUserMemory(_In_ PPROCESS_CONTEXT Context)
             __leave;
         }
 
-        BOOL IsProcess64 = IsProcessPe64(Context->UniqueProcess);
-        SIZE_T size = 0;
-    #ifdef _WIN64
-        if (IsProcess64) {
-            size = g_us_FullDllPathName.Length;
-        } else {//WOW64.
-            size = g_us_FullDllPathNameWow64.Length;
+        SIZE_T Size = 0;
+        if (IsWow64Process(Context->UniqueProcess)) {
+            Size = g_DllDosFullPathWow64.Length;
+        } else {
+            Size = g_DllDosFullPath.Length;
         }
-    #else
-        size = g_us_FullDllPathName.Length;
-    #endif
-        status = ZwFreeVirtualMemory(Handle, &Context->UserAddress, &size, MEM_DECOMMIT);
+        if (!Size) {
+            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "pid:%d", HandleToULong(Context->UniqueProcess));
+            __leave;
+        }
+
+        status = ZwFreeVirtualMemory(Handle, &Context->UserAddress, &Size, MEM_DECOMMIT);
         if (!NT_SUCCESS(status)) {
-            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, size:%lld",
-                  status, HandleToULong(Context->UniqueProcess), size);
+            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, Size:%lld",
+                  status, HandleToULong(Context->UniqueProcess), Size);
             __leave;
         }
     } __finally {

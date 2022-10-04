@@ -4,16 +4,10 @@
 #include "Process.h"
 
 
-UNICODE_STRING g_kernel32 = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\kernel32.dll");
-wchar_t g_Ntkernel32[MAX_PATH] = {0};
 UNICODE_STRING g_Ntkernel32Path = {0};
-wchar_t g_DosKernel32[MAX_PATH] = {0};
 UNICODE_STRING g_DosKernel32Path = {0};
 
-UNICODE_STRING g_kernelWow64 = RTL_CONSTANT_STRING(L"\\SystemRoot\\SysWOW64\\kernel32.dll");
-wchar_t g_NtkernelWow64[MAX_PATH] = {0};
 UNICODE_STRING g_NtkernelWow64Path = {0};
-wchar_t g_DosKernelWow64[MAX_PATH] = {0};
 UNICODE_STRING g_DosKernelWow64Path = {0};
 
 SIZE_T LoadLibraryExWFn;//某个进程中的L"\\SystemRoot\\System32\\kernel32.dll"里的LoadLibraryExW地址。
@@ -33,20 +27,12 @@ SIZE_T LoadLibraryWWow64Fn;//某个WOW64进程中的L"\\SystemRoot\\SysWOW64\\kernel32
 
 void GetKernel32FullPath()
 {
-    RtlInitUnicodeString(&g_Ntkernel32Path, g_Ntkernel32);
-    g_Ntkernel32Path.MaximumLength = sizeof(g_Ntkernel32);
-    RtlInitUnicodeString(&g_DosKernel32Path, g_DosKernel32);
-    g_DosKernel32Path.MaximumLength = sizeof(g_DosKernel32);
-
-    GetSystemRootPathName(&g_kernel32, &g_Ntkernel32Path, &g_DosKernel32Path);
+    UNICODE_STRING g_kernel32 = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\kernel32.dll");
+    GetSystemRootName(&g_kernel32, &g_Ntkernel32Path, &g_DosKernel32Path);
 
 #ifdef _WIN64
-    RtlInitUnicodeString(&g_NtkernelWow64Path, g_NtkernelWow64);
-    g_NtkernelWow64Path.MaximumLength = sizeof(g_NtkernelWow64);
-    RtlInitUnicodeString(&g_DosKernelWow64Path, g_DosKernelWow64);
-    g_DosKernelWow64Path.MaximumLength = sizeof(g_DosKernelWow64);
-
-    GetSystemRootPathName(&g_kernelWow64, &g_NtkernelWow64Path, &g_DosKernelWow64Path);
+    UNICODE_STRING g_kernelWow64 = RTL_CONSTANT_STRING(L"\\SystemRoot\\SysWOW64\\kernel32.dll");
+    GetSystemRootName(&g_kernelWow64, &g_NtkernelWow64Path, &g_DosKernelWow64Path);
 #endif
 }
 
