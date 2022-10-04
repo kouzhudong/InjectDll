@@ -494,7 +494,7 @@ void BuildDLL()
     set_dll_full_path_wow64(&dll_full_path_name_wow64);
 
     ExtraFile("test.sys", RT_RCDATA, 5009, &dll_full_path_name);
-    //ExtraFile("test.sys", RT_RCDATA, 5010, &dll_full_path_name2);
+    ExtraFile("test.sys", RT_RCDATA, 5010, &dll_full_path_name_wow64);
 
     ExFreePoolWithTag(sys_full_path_name.Buffer, TAG);
     ExFreePoolWithTag(dll_full_path_name.Buffer, TAG);
