@@ -40,7 +40,11 @@ NTSTATUS InjectAllThread(__in HANDLE UniqueProcessId)
 }
 
 
-NTSTATUS InjectDllByRtlCreateUserThread(HANDLE Process)
+NTSTATUS InjectDllByRtlCreateUserThread(_In_ HANDLE Process,
+                                        _Inout_ PHANDLE ThreadHandleReturn,
+                                        _Inout_ PCLIENT_ID ClientId,
+                                        _Inout_ PVOID * UserAddress
+)
 /*
 
 注意：WOW64的处理。
@@ -84,10 +88,10 @@ DllPullPath所在的内存是应用层的。
     if (!IsLoadKernel32(Process)) {
         return STATUS_UNSUCCESSFUL;
     }
-
-    Status = CreateUserThread(Process, LoadLibraryW, (PVOID)DllPullPath);
+    
+    Status = CreateUserThread(Process, LoadLibraryW, (PVOID)DllPullPath, ThreadHandleReturn, ClientId);
     if (NT_SUCCESS(Status)) {
-        
+        *UserAddress = (PVOID)DllPullPath;
     }
 
     return Status;
@@ -132,12 +136,19 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
 
         //IsSecureProcess
 
+        HANDLE ThreadHandleReturn = NULL;
+        CLIENT_ID ClientId = {0};
+        PVOID UserAddress = NULL;
+
         //InjectAllThread(UniqueProcessId);
-        status = InjectDllByRtlCreateUserThread(UniqueProcessId);
+        status = InjectDllByRtlCreateUserThread(UniqueProcessId, &ThreadHandleReturn, &ClientId, &UserAddress);
         if (NT_SUCCESS(status)) {
             PROCESS_CONTEXT Temp = {0};
             Temp.Pid = UniqueProcessId;
             Temp.IsInjected = TRUE;
+            Temp.InjectThreadId = ClientId.UniqueThread;
+            Temp.UniqueProcess = ClientId.UniqueProcess;
+            Temp.UserAddress = UserAddress;
             UpdateProcessContext(&Temp);
         }
     } __finally {

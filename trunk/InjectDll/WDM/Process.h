@@ -17,6 +17,9 @@ typedef struct _PROCESS_CONTEXT {
     BOOLEAN IsCanInject;//可注入吗？即相应的kernel32.dll加载了吗？
     BOOLEAN IsInjected;//已经成功注入了吗？
     HANDLE InjectThreadId;//注入的线程的ID。用于线程退出时，释放应用层的内存。
+    HANDLE UniqueProcess;
+
+    PVOID UserAddress;
 
 } PROCESS_CONTEXT, * PPROCESS_CONTEXT;
 

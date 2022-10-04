@@ -144,6 +144,14 @@ VOID UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
                     node->InjectThreadId = ProcessContext->InjectThreadId;
                 }
 
+                if (ProcessContext->UserAddress) {
+                    node->UserAddress = ProcessContext->UserAddress;
+                }
+
+                if (ProcessContext->UniqueProcess) {
+                    node->UniqueProcess = ProcessContext->UniqueProcess;
+                }
+
                 break;
             }
         }
