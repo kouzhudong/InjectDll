@@ -18,12 +18,12 @@ Inject dll to process in driver
    其实，被注入的DLL可卸载会更简单。不用暴力的遍历进程强制卸载，只需DLL留一个可卸载的IPC接口即可。  
 5. 支持WOW64.  
 6. 尽可能多的注入。  
-   排除没有用户态的进程（Minimal processes，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等）  
+   排除没有用户态的进程（Minimal processes，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等）。  
    Pico processes（如：WSL1.0）不支持。  
    保护进程（Protected processes）也不建议注入，尽管也可以强制注入（用一些猥亵的手段）。  
-   Native processes（即只准有Ntdll.dll和自身的进程）也不建议注入（本方案按不支持）。
+   Native processes（即只准有Ntdll.dll和自身的进程）也不建议注入（本方案按不支持）。  
    但是.net(APP),Java等进程还是不放过的。  
-   挂起状态的进程不支持。
+   挂起状态的进程不支持。  
 7. 其他。如：优化，快速，防止多次注入等。  
 
 被注入的DLL的功能在乎你的想象，如：加入HOOK引擎（如微软的Detours）。  
