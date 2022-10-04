@@ -71,14 +71,14 @@ VOID ThreadNotifyRoutine(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLE
     }
 
     if (Create) {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%p启动", ThreadId);
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%p启动", ThreadId);//这个没触发？
 
         PROCESS_CONTEXT Temp = {0};
         Temp.Pid = ProcessId;
         Temp.IsInjected = TRUE;
         UpdateProcessContext(&Temp);
     } else {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%p结束", ThreadId);
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%d结束", HandleToUlong(ThreadId));
 
         FreeUserMemory(Context);
 
