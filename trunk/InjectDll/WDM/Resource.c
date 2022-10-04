@@ -464,8 +464,10 @@ void get_sys_path(UNICODE_STRING * sys_full_path_name)
 void BuildDLL()
 {
     UNICODE_STRING sys_full_path_name = {0};
-    UNICODE_STRING dll_full_path_name = {0};
+    UNICODE_STRING dll_full_path_name = {0};    
+#ifdef _WIN64
     UNICODE_STRING dll_full_path_name_wow64 = {0};
+#endif   
 
     /*
     可以把把DLL内嵌在SYS的资源里面，然后用：LdrFindResource_U/LdrAccessResource/LdrEnumResources等函数获取，然后在ZwCreateFile一个。
@@ -485,6 +487,7 @@ void BuildDLL()
     //注意要返回LoadLibraryW用的DOS路径。
     set_dll_full_path(&dll_full_path_name);
 
+#ifdef _WIN64
     dll_full_path_name_wow64.Length = MAX_PATH * sizeof(wchar_t);
     dll_full_path_name_wow64.MaximumLength = dll_full_path_name_wow64.Length;
     dll_full_path_name_wow64.Buffer = ExAllocatePoolWithTag(NonPagedPool, dll_full_path_name_wow64.Length, TAG);
@@ -492,11 +495,16 @@ void BuildDLL()
     //get_dll_path(&dll_full_path_name);
     //注意要返回LoadLibraryW用的DOS路径。
     set_dll_full_path_wow64(&dll_full_path_name_wow64);
+#endif  
 
     ExtraFile("test.sys", RT_RCDATA, 5009, &dll_full_path_name);
+#ifdef _WIN64
     ExtraFile("test.sys", RT_RCDATA, 5010, &dll_full_path_name_wow64);
+#endif    
 
     ExFreePoolWithTag(sys_full_path_name.Buffer, TAG);
     ExFreePoolWithTag(dll_full_path_name.Buffer, TAG);
+#ifdef _WIN64
     ExFreePoolWithTag(dll_full_path_name_wow64.Buffer, TAG);
+#endif  
 }
