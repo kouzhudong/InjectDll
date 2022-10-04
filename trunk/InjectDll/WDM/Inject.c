@@ -1,6 +1,7 @@
 #include "Inject.h"
 #include "apc.h"
 #include "Image.h"
+#include "Process.h"
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,8 @@ PUSER_THREAD_START_ROUTINE和LoadLibraryW的原型竟然一致。
 注意：WOW64的参数的大小，如：指针和size_t等。
 
 DllPullPath所在的内存是应用层的。
+
+只管注入，不管多余的事。
 */
 {
     NTSTATUS Status = STATUS_SUCCESS;    
@@ -83,6 +86,9 @@ DllPullPath所在的内存是应用层的。
     }
 
     Status = CreateUserThread(Process, LoadLibraryW, (PVOID)DllPullPath);
+    if (NT_SUCCESS(Status)) {
+        
+    }
 
     return Status;
 }
@@ -127,8 +133,13 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
         //IsSecureProcess
 
         //InjectAllThread(UniqueProcessId);
-        InjectDllByRtlCreateUserThread(UniqueProcessId);
-
+        status = InjectDllByRtlCreateUserThread(UniqueProcessId);
+        if (NT_SUCCESS(status)) {
+            PROCESS_CONTEXT Temp = {0};
+            Temp.Pid = UniqueProcessId;
+            Temp.IsInjected = TRUE;
+            UpdateProcessContext(&Temp);
+        }
     } __finally {
         ObDereferenceObject(Process);
     }

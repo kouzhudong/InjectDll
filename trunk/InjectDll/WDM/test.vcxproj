@@ -188,7 +188,9 @@
     <ClCompile Include="apc.c" />
     <ClCompile Include="Image.c" />
     <ClCompile Include="Inject.c" />
+    <ClCompile Include="Process.c" />
     <ClCompile Include="Resource.c" />
+    <ClCompile Include="Thread.c" />
     <ResourceCompile Include="@(RcSourceFiles)" Exclude="@(ResourceCompile)" />
     <Midl Include="@(IdlSourceFiles)" Exclude="@(Midl)" />
     <MessageCompile Include="@(McSourceFiles)" Exclude="@(MessageCompile)" />
@@ -219,8 +221,10 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="Inject.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Process.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="Thread.h" />
   </ItemGroup>
   <!-- /Necessary to pick up propper files from local directory when in the IDE-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

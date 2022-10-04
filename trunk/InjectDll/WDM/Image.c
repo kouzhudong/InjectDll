@@ -1,6 +1,7 @@
 #include "Image.h"
 #include "Inject.h"
 #include "apc.h"
+#include "Process.h"
 
 
 UNICODE_STRING g_kernel32 = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\kernel32.dll");
@@ -237,9 +238,6 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
         GetLoadLibraryExWAddressByPid(ProcessId);
     }
 
-    InjectOneProcess(ProcessId, NULL);//总会成功的吧！不选择时机了，失败了也无所谓。
-
-#ifdef false
     UNICODE_STRING LoadImageFullName = {0};
     BOOL IsKernel32 = FALSE;
 
@@ -256,12 +254,21 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
     }
 #endif
 
-    if (IsKernel32) {
-        InjectOneProcess(ProcessId, NULL);
+    PPROCESS_CONTEXT Context = GetProcessContext(ProcessId);
+    if (Context) {
+        if (Context->IsCanInject && !Context->IsInjected) {
+            InjectOneProcess(ProcessId, NULL);//总会成功的吧！不选择时机了，失败了也无所谓。
+        }
     }
 
+    if (IsKernel32) {
+        PROCESS_CONTEXT Temp = {0};
+        Temp.Pid = ProcessId;
+        Temp.IsCanInject = TRUE;
+        UpdateProcessContext(&Temp);
+    }    
+
     FreeUnicodeString(&LoadImageFullName);
-#endif 
 }
 
 

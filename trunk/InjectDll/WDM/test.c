@@ -2,6 +2,8 @@
 #include "apc.h"
 #include "Resource.h"
 #include "Inject.h"
+#include "Process.h"
+#include "Thread.h"
 #include "Image.h"
 
 
@@ -36,44 +38,40 @@ void init()
 
     GetLoadLibraryExWAddressByEnum();
 
+    InitProcessContextList();
+
     BuildDLL();
-}
-
-
-VOID CreateProcessNotify(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOLEAN Create);
-#pragma alloc_text(PAGE, CreateProcessNotify)
-VOID CreateProcessNotify(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOLEAN Create)
-/*
-此时不建议注入DLL，因为PEB为空，很多DLL还没加载。
-*/
-{
-    PAGED_CODE();
-
-    UNREFERENCED_PARAMETER(ParentId);
-
-    if (Create) {
-        //InjectAllThread(ProcessId);
-    }
 }
 
 
 DRIVER_UNLOAD Unload;
 VOID Unload(__in PDRIVER_OBJECT DriverObject)
 {
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    NTSTATUS Status = STATUS_UNSUCCESSFUL;
 
-    //status = PsSetCreateProcessNotifyRoutine(CreateProcessNotify, TRUE);
-    status = PsRemoveLoadImageNotifyRoutine(ImageNotifyRoutine);
-    if (!NT_SUCCESS(status)) {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", status);
+    Status = PsSetCreateProcessNotifyRoutine(ProcessNotifyRoutine, TRUE);
+    if (!NT_SUCCESS(Status)) {
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", Status);
     }
+
+    Status = PsRemoveCreateThreadNotifyRoutine(ThreadNotifyRoutine);
+    if (!NT_SUCCESS(Status)) {
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
+    }
+
+    Status = PsRemoveLoadImageNotifyRoutine(ImageNotifyRoutine);
+    if (!NT_SUCCESS(Status)) {
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", Status);
+    }
+
+    RemoveProcessContextList();
 }
 
 
 DRIVER_INITIALIZE DriverEntry;
 NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_STRING  RegistryPath)
 {
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    NTSTATUS Status = STATUS_UNSUCCESSFUL;
 
     if (!KD_DEBUGGER_NOT_PRESENT) {
         KdBreakPoint();//__debugbreak();
@@ -90,14 +88,31 @@ NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_ST
 
     init();
 
-    //status = PsSetCreateProcessNotifyRoutine(CreateProcessNotify, FALSE);
-    status = PsSetLoadImageNotifyRoutine(ImageNotifyRoutine);
-    if (!NT_SUCCESS(status)) {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", status);
-        return status;
+    __try {
+        Status = PsSetCreateProcessNotifyRoutine(ProcessNotifyRoutine, FALSE);
+        if (!NT_SUCCESS(Status)) {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
+            __leave;
+        }
+
+        Status = PsSetLoadImageNotifyRoutine(ImageNotifyRoutine);
+        if (!NT_SUCCESS(Status)) {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Status:%#x", Status);
+            __leave;
+        }
+
+        Status = PsSetCreateThreadNotifyRoutine(ThreadNotifyRoutine);
+        if (!NT_SUCCESS(Status)) {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "Error: Status:%#x", Status);
+            __leave;
+        }
+
+        InjectAllProcess();
+    } __finally {
+        if (!NT_SUCCESS(Status)) {
+            Unload(DriverObject);
+        }
     }
 
-    status = InjectAllProcess();
-
-    return STATUS_SUCCESS;
+    return Status;
 }
