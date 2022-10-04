@@ -31,21 +31,21 @@ APC是操作系统的一项基本的机制。
 注入第一要素是稳定，宁肯失败也不要出问题。
 有很多进程是注定要失败的。
 如：
-1.Protected processes。
+1. Protected processes。
   详细见：Protected Process Light (PPL)。
   这类进程是打不开，尽管是在驱动（常规情况）。
-2.Minimal processes。
+2. Minimal processes。
   这类进程是没有用户态空间的。
   举例：System process and Memory Compression process，还有注册表，中断，IDLE等。
   尽管你可以申请用户态的内存，但，这也没有比较注入，除非你想隐藏功能。
-3..net(app)和java等程序，这个要考虑要不要注入。
-4.Pico processes。
+3. .net(app)和java等程序，这个要考虑要不要注入。
+4. Pico processes。
   如：WSL的进程。还是放过吧！
-5.X64下对于WOW64进程（建议）要注入32的DLL。
-6.Native processes。
+5. X64下对于WOW64进程（建议）要注入32的DLL。
+6. Native processes。
   这类程序只有Ntdll.dll和自身。
   这类程序平常下不可启动，只有在操作系统启动时启动。如：检查磁盘的那个，还有会话管理器进程。
-7.还包括第三方保护的进程，如：杀软，调试等。
+7. 还包括第三方保护的进程，如：杀软，调试等。
 
 因为：注入第一要素是稳定，宁肯失败也不要出问题。
 所以：
