@@ -80,6 +80,8 @@ NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_ST
     //  Default to NonPagedPoolNx for non paged pool allocations where supported.   
     ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
 
+    //warning C28131: The DriverEntry routine should save a copy of the argument RegistryPath, not the pointer, 
+    //since the I/O Manager frees the buffer after DriverEntry returns.
     g_RegistryPath = RegistryPath;
 
 #if DBG 

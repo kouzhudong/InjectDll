@@ -176,8 +176,6 @@ void get_sys_path(UNICODE_STRING * sys_full_path_name)
     UNICODE_STRING valueName;
     ULONG ResultLength;
     PKEY_VALUE_PARTIAL_INFORMATION pkvpi;
-    UNICODE_STRING test;
-    UNICODE_STRING directory = RTL_CONSTANT_STRING(L"\\DosDevices");//\\C:\\test.sys
 
     InitializeObjectAttributes(&attributes, g_RegistryPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
     status = ZwOpenKey(&driverRegKey, KEY_READ, &attributes);
@@ -190,17 +188,6 @@ void get_sys_path(UNICODE_STRING * sys_full_path_name)
     ASSERT(pkvpi != NULL);
     status = ZwQueryValueKey(driverRegKey, &valueName, KeyValuePartialInformation, pkvpi, ResultLength, &ResultLength);
     ASSERT(NT_SUCCESS(status));
-
-    //sys_full_path_name->Length = (USHORT)pkvpi->DataLength;
-    //RtlCopyMemory(sys_full_path_name->Buffer, pkvpi->Data, pkvpi->DataLength);
-    //"\??\C:\Documents and Settings\Administrator\桌面\test.sys"
-
-    //test.Buffer = (wchar_t *)((char *)pkvpi->Data + 6);
-    //test.Length = (USHORT)pkvpi->DataLength - 6;
-    //test.MaximumLength = test.Length ;
-    //RtlCopyUnicodeString(sys_full_path_name, &directory);
-    //status = RtlAppendUnicodeStringToString(sys_full_path_name, &test);
-    //ASSERT (NT_SUCCESS(status)) ;
 
     ExFreePoolWithTag(pkvpi, TAG);
     status = ZwClose(driverRegKey);
@@ -463,7 +450,6 @@ void get_sys_path(UNICODE_STRING * sys_full_path_name)
 
 void BuildDLL()
 {
-    UNICODE_STRING sys_full_path_name = {0};
     UNICODE_STRING dll_full_path_name = {0};    
 #ifdef _WIN64
     UNICODE_STRING dll_full_path_name_wow64 = {0};
@@ -472,12 +458,6 @@ void BuildDLL()
     /*
     可以把把DLL内嵌在SYS的资源里面，然后用：LdrFindResource_U/LdrAccessResource/LdrEnumResources等函数获取，然后在ZwCreateFile一个。
     */
-
-    sys_full_path_name.Length = MAX_PATH * sizeof(wchar_t);
-    sys_full_path_name.MaximumLength = sys_full_path_name.Length;
-    sys_full_path_name.Buffer = ExAllocatePoolWithTag(NonPagedPool, sys_full_path_name.Length, TAG);
-    ASSERT(sys_full_path_name.Buffer != NULL);
-    get_sys_path(&sys_full_path_name);
 
     dll_full_path_name.Length = MAX_PATH * sizeof(wchar_t);
     dll_full_path_name.MaximumLength = dll_full_path_name.Length;
@@ -502,7 +482,6 @@ void BuildDLL()
     ExtraFile("test.sys", RT_RCDATA, 5010, &dll_full_path_name_wow64);
 #endif    
 
-    ExFreePoolWithTag(sys_full_path_name.Buffer, TAG);
     ExFreePoolWithTag(dll_full_path_name.Buffer, TAG);
 #ifdef _WIN64
     ExFreePoolWithTag(dll_full_path_name_wow64.Buffer, TAG);
