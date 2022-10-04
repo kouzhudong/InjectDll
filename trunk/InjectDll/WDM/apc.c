@@ -551,7 +551,6 @@ NTSTATUS QueueApcThread(PCLIENT_ID ClientId)
 
     PVOID Argument = SetDllFullPath(ClientId->UniqueProcess);
     if (!Argument) {
-        Print(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "pid:%d", HandleToUlong(ClientId->UniqueProcess));
         return STATUS_UNSUCCESSFUL;
     }
 

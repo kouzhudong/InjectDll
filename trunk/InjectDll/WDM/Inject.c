@@ -69,7 +69,6 @@ DllPullPath所在的内存是应用层的。
 
     LPCWSTR DllPullPath = SetDllFullPath(Process);
     if (!DllPullPath) {
-        Print(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "pid:%d", HandleToUlong(Process));
         return STATUS_UNSUCCESSFUL;
     }
 
