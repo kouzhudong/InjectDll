@@ -21,7 +21,7 @@ Inject dll to process in driver
    排除没有用户态的进程（Minimal processes，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等）。  
    Pico processes（如：WSL1.0）不支持。  
    保护进程（Protected processes）也不建议注入，尽管也可以强制注入（用一些猥亵的手段）。  
-   Native processes（即只准有Ntdll.dll和自身的进程）也不建议注入（本方案按不支持）。  
+   Native processes（即只准有Ntdll.dll和自身的进程）也不建议注入（本方案暂不支持）。  
    但是.net(APP),Java等进程还是不放过的。  
    挂起状态的进程不支持。  
 7. 其他。如：优化，快速，防止多次注入等。  
