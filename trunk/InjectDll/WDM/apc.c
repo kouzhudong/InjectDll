@@ -455,7 +455,12 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
     #else
         size = g_us_FullDllPathName.Length;
     #endif
-         
+
+        if (0 == size) {
+            Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "size == 0, pid:%d", HandleToULong(UniqueProcess));
+            __leave;
+        }
+
         status = ZwAllocateVirtualMemory(Handle, &DllFullPath, 0, &size, MEM_COMMIT, PAGE_READWRITE);
         if (!NT_SUCCESS(status)) {//如果是PAGE_EXECUTE_READWRITE会出现STATUS_DYNAMIC_CODE_BLOCKED.
             Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, size:%lld",
