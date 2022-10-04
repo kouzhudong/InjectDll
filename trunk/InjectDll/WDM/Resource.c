@@ -2,196 +2,11 @@
 #include "..\libdrv\inc\lib.h"
 
 
-WCHAR g_FullDllPathName[MAX_PATH];
-UNICODE_STRING g_us_FullDllPathName;//被注入DLL的全路径。
-
-WCHAR g_FullDllPathNameWow64[MAX_PATH];
+UNICODE_STRING g_us_FullDllPathName;//被注入DLL的全路径(DOS格式)。
 UNICODE_STRING g_us_FullDllPathNameWow64;
 
 
 PUNICODE_STRING g_RegistryPath;
-
-
-BOOL set_dll_full_path(PUNICODE_STRING dll_full_path_name)
-/*
-功能：获取svchost.exe进程所在文件的全路径。
-      路径格式：\Device\HarddiskVolume1\WINDOWS\system32\DLL.DLL
-      之所以是NT式而不是DOS式，是因为文件过滤驱动中返回的大多是NT式。
-      这里要用IoQueryFileDosDeviceName的逆向的功能。
-注意：在64位系统中还有:"\\KnownDlls32\\KnownDllPath".
-
-csrss.exe的路径不建议这样获取，建议用用户传递过来的PID。
-*/
-{
-    ULONG ActualLength;
-    HANDLE LinkHandle;
-    WCHAR DosPath[MAX_PATH];
-    OBJECT_ATTRIBUTES ObjectAttributes;
-    UNICODE_STRING LinkString, NameString;
-    WCHAR pszDest[8]; //大于L"\\??\\%c:"的长度。
-    LPCWSTR pszFormat = L"\\??\\%c:";//L"\\DosDevices\\%c:"  L"\\??\\%c:"
-    NTSTATUS status = STATUS_SUCCESS;
-
-    //步骤一：获取L"\\KnownDlls\\KnownDllPath"的值，如：C:\WINDOWS\system32
-    LinkString.Buffer = DosPath;
-    LinkString.MaximumLength = sizeof(DosPath);
-    RtlZeroMemory(DosPath, sizeof(DosPath));
-    RtlInitUnicodeString(&NameString, L"\\KnownDlls\\KnownDllPath");//不可以用//,不然会ZwOpenSymbolicLinkObject调用失败.就是得到的句柄为0.
-    InitializeObjectAttributes(&ObjectAttributes, &NameString, OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = ZwOpenSymbolicLinkObject(&LinkHandle, SYMBOLIC_LINK_QUERY, &ObjectAttributes);
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = ZwQuerySymbolicLinkObject(LinkHandle, &LinkString, &ActualLength);//LinkString就是想要的值.
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    //KdPrint(("KnownDllPath: %wZ \n",&LinkString));//形如：C:\WINDOWS\system32
-    ZwClose(LinkHandle);
-
-    {
-        g_us_FullDllPathName.Buffer = g_FullDllPathName;
-        g_us_FullDllPathName.Length = MAX_PATH * sizeof(wchar_t);
-        g_us_FullDllPathName.MaximumLength = g_us_FullDllPathName.Length;
-        RtlCopyUnicodeString(&g_us_FullDllPathName, &LinkString);
-        g_us_FullDllPathName.MaximumLength = MAX_PATH * sizeof(wchar_t);
-        status = RtlAppendUnicodeToString(&g_us_FullDllPathName, L"\\dll.dll");
-        ASSERT(NT_SUCCESS(status));
-    }
-
-    //步骤二：获取卷的值，如：C对应的"\Device\HarddiskVolume1"。
-    status = RtlStringCbPrintfW(pszDest, 8 * sizeof(WCHAR), pszFormat, LinkString.Buffer[0]);//格式化字符串。
-    RtlInitUnicodeString(&NameString, pszDest);//注意格式。L"\\??\\c:"
-    InitializeObjectAttributes(&ObjectAttributes, &NameString, OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = ZwOpenSymbolicLinkObject(&LinkHandle, SYMBOLIC_LINK_QUERY | GENERIC_READ, &ObjectAttributes);
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = ZwQuerySymbolicLinkObject(LinkHandle, dll_full_path_name, &ActualLength);
-    if (!NT_SUCCESS(status)) {
-        ZwClose(LinkHandle);
-        return FALSE;
-    }
-    //KdPrint(("%wZ \r\n",&LinkString));//得到的值形如："\Device\HarddiskVolume1"。
-    ZwClose(LinkHandle);
-
-    //步骤三：组合路径。    
-    status = RtlAppendUnicodeToString(dll_full_path_name, &LinkString.Buffer[2]);//跳过：C:\WINDOWS\system32的前两字符，如：x:。
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = RtlAppendUnicodeToString(dll_full_path_name, L"\\dll.dll");
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    //KdPrint(("%wZ \r\n",&NtString));
-
-    return TRUE;
-}
-
-
-BOOL set_dll_full_path_wow64(PUNICODE_STRING dll_full_path_name)
-/*
-功能：获取svchost.exe进程所在文件的全路径。
-      路径格式：\Device\HarddiskVolume1\WINDOWS\system32\DLL.DLL
-      之所以是NT式而不是DOS式，是因为文件过滤驱动中返回的大多是NT式。
-      这里要用IoQueryFileDosDeviceName的逆向的功能。
-注意：在64位系统中还有:"\\KnownDlls32\\KnownDllPath".
-
-csrss.exe的路径不建议这样获取，建议用用户传递过来的PID。
-*/
-{
-    ULONG ActualLength;
-    HANDLE LinkHandle;
-    WCHAR DosPath[MAX_PATH];
-    OBJECT_ATTRIBUTES ObjectAttributes;
-    UNICODE_STRING LinkString, NameString;
-    WCHAR pszDest[8]; //大于L"\\??\\%c:"的长度。
-    LPCWSTR pszFormat = L"\\??\\%c:";//L"\\DosDevices\\%c:"  L"\\??\\%c:"
-    NTSTATUS status = STATUS_SUCCESS;
-
-    //步骤一：获取L"\\KnownDlls\\KnownDllPath"的值，如：C:\WINDOWS\system32
-    LinkString.Buffer = DosPath;
-    LinkString.MaximumLength = sizeof(DosPath);
-    RtlZeroMemory(DosPath, sizeof(DosPath));
-    RtlInitUnicodeString(&NameString, L"\\KnownDlls32\\KnownDllPath");//不可以用//,不然会ZwOpenSymbolicLinkObject调用失败.就是得到的句柄为0.
-    InitializeObjectAttributes(&ObjectAttributes, &NameString, OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = ZwOpenSymbolicLinkObject(&LinkHandle, SYMBOLIC_LINK_QUERY, &ObjectAttributes);
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = ZwQuerySymbolicLinkObject(LinkHandle, &LinkString, &ActualLength);//LinkString就是想要的值.
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    //KdPrint(("KnownDllPath: %wZ \n",&LinkString));//形如：C:\WINDOWS\system32
-    ZwClose(LinkHandle);
-
-    {
-        g_us_FullDllPathNameWow64.Buffer = g_FullDllPathNameWow64;
-        g_us_FullDllPathNameWow64.Length = MAX_PATH * sizeof(wchar_t);
-        g_us_FullDllPathNameWow64.MaximumLength = g_us_FullDllPathNameWow64.Length;
-        RtlCopyUnicodeString(&g_us_FullDllPathNameWow64, &LinkString);
-        g_us_FullDllPathNameWow64.MaximumLength = MAX_PATH * sizeof(wchar_t);
-        status = RtlAppendUnicodeToString(&g_us_FullDllPathNameWow64, L"\\dll.dll");
-        ASSERT(NT_SUCCESS(status));
-    }
-
-    //步骤二：获取卷的值，如：C对应的"\Device\HarddiskVolume1"。
-    status = RtlStringCbPrintfW(pszDest, 8 * sizeof(WCHAR), pszFormat, LinkString.Buffer[0]);//格式化字符串。
-    RtlInitUnicodeString(&NameString, pszDest);//注意格式。L"\\??\\c:"
-    InitializeObjectAttributes(&ObjectAttributes, &NameString, OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = ZwOpenSymbolicLinkObject(&LinkHandle, SYMBOLIC_LINK_QUERY | GENERIC_READ, &ObjectAttributes);
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = ZwQuerySymbolicLinkObject(LinkHandle, dll_full_path_name, &ActualLength);
-    if (!NT_SUCCESS(status)) {
-        ZwClose(LinkHandle);
-        return FALSE;
-    }
-    //KdPrint(("%wZ \r\n",&LinkString));//得到的值形如："\Device\HarddiskVolume1"。
-    ZwClose(LinkHandle);
-
-    //步骤三：组合路径。    
-    status = RtlAppendUnicodeToString(dll_full_path_name, &LinkString.Buffer[2]);//跳过：C:\WINDOWS\system32的前两字符，如：x:。
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    status = RtlAppendUnicodeToString(dll_full_path_name, L"\\dll.dll");
-    if (!NT_SUCCESS(status)) {
-        return FALSE;
-    }
-    //KdPrint(("%wZ \r\n",&NtString));
-
-    return TRUE;
-}
-
-
-void get_sys_path(UNICODE_STRING * sys_full_path_name)
-{
-    NTSTATUS status;
-    OBJECT_ATTRIBUTES attributes;
-    HANDLE driverRegKey = NULL;
-    UNICODE_STRING valueName;
-    ULONG ResultLength;
-    PKEY_VALUE_PARTIAL_INFORMATION pkvpi;
-
-    InitializeObjectAttributes(&attributes, g_RegistryPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = ZwOpenKey(&driverRegKey, KEY_READ, &attributes);
-    ASSERT(NT_SUCCESS(status));
-
-    RtlInitUnicodeString(&valueName, L"ImagePath");
-    status = ZwQueryValueKey(driverRegKey, &valueName, KeyValuePartialInformation, NULL, 0, &ResultLength);
-    ASSERT(status == STATUS_BUFFER_TOO_SMALL || status == STATUS_BUFFER_OVERFLOW);
-    pkvpi = ExAllocatePoolWithTag(NonPagedPool, ResultLength, TAG);
-    ASSERT(pkvpi != NULL);
-    status = ZwQueryValueKey(driverRegKey, &valueName, KeyValuePartialInformation, pkvpi, ResultLength, &ResultLength);
-    ASSERT(NT_SUCCESS(status));
-
-    ExFreePoolWithTag(pkvpi, TAG);
-    status = ZwClose(driverRegKey);
-}
 
 
 //BOOLEAN create_dll_XXX(IN UNICODE_STRING * FileName, IN UNICODE_STRING * newFileName) //CONST
@@ -450,40 +265,29 @@ void get_sys_path(UNICODE_STRING * sys_full_path_name)
 
 void BuildDLL()
 {
-    UNICODE_STRING dll_full_path_name = {0};    
-#ifdef _WIN64
-    UNICODE_STRING dll_full_path_name_wow64 = {0};
-#endif   
+    UNICODE_STRING Dll = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\dll.dll");
+    UNICODE_STRING DllWow64 = RTL_CONSTANT_STRING(L"\\SystemRoot\\SysWOW64\\dll.dll");
+
+    UNICODE_STRING Dos = {0};
+    UNICODE_STRING DosWow64 = {0};
+
+    GetSystemRootName(&Dll, &Dos, &g_us_FullDllPathName);
 
     /*
     可以把把DLL内嵌在SYS的资源里面，然后用：LdrFindResource_U/LdrAccessResource/LdrEnumResources等函数获取，然后在ZwCreateFile一个。
     */
 
-    dll_full_path_name.Length = MAX_PATH * sizeof(wchar_t);
-    dll_full_path_name.MaximumLength = dll_full_path_name.Length;
-    dll_full_path_name.Buffer = ExAllocatePoolWithTag(NonPagedPool, dll_full_path_name.Length, TAG);
-    ASSERT(dll_full_path_name.Buffer != NULL);
-    //get_dll_path(&dll_full_path_name);
-    //注意要返回LoadLibraryW用的DOS路径。
-    set_dll_full_path(&dll_full_path_name);
-
 #ifdef _WIN64
-    dll_full_path_name_wow64.Length = MAX_PATH * sizeof(wchar_t);
-    dll_full_path_name_wow64.MaximumLength = dll_full_path_name_wow64.Length;
-    dll_full_path_name_wow64.Buffer = ExAllocatePoolWithTag(NonPagedPool, dll_full_path_name_wow64.Length, TAG);
-    ASSERT(dll_full_path_name_wow64.Buffer != NULL);
-    //get_dll_path(&dll_full_path_name);
-    //注意要返回LoadLibraryW用的DOS路径。
-    set_dll_full_path_wow64(&dll_full_path_name_wow64);
+    GetSystemRootName(&DllWow64, &DosWow64, &g_us_FullDllPathNameWow64);
 #endif  
 
-    ExtraFile("test.sys", RT_RCDATA, 5009, &dll_full_path_name);
+    ExtraFile("test.sys", RT_RCDATA, 5009, &g_us_FullDllPathName);
 #ifdef _WIN64
-    ExtraFile("test.sys", RT_RCDATA, 5010, &dll_full_path_name_wow64);
+    ExtraFile("test.sys", RT_RCDATA, 5010, &g_us_FullDllPathNameWow64);
 #endif    
 
-    ExFreePoolWithTag(dll_full_path_name.Buffer, TAG);
+    FreeUnicodeString(&Dos);
 #ifdef _WIN64
-    ExFreePoolWithTag(dll_full_path_name_wow64.Buffer, TAG);
+    FreeUnicodeString(&DosWow64);
 #endif  
 }

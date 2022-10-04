@@ -65,6 +65,9 @@ VOID Unload(__in PDRIVER_OBJECT DriverObject)
     }
 
     RemoveProcessContextList();
+
+    FreeUnicodeString(&g_us_FullDllPathName);
+    FreeUnicodeString(&g_us_FullDllPathNameWow64);
 }
 
 
