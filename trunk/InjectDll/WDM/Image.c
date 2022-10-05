@@ -213,7 +213,7 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
 /*
 此时能监控到被注入的DLL。
 
-这个时机判断注入成功（进程上下文的IsCanInject）比判断RtlCreateUserThread更准确，可信。
+这个时机判断注入成功（进程上下文的IsCanInject）比判断RtlCreateUserThread更准确，可信，但是费劲，费时。
 */
 {
     if (ImageInfo->SystemModeImage) {
