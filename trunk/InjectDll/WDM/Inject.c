@@ -158,9 +158,28 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
 }
 
 
+NTSTATUS WINAPI InjectProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Context)
+{
+    PPROCESS_CONTEXT Temp = GetProcessContext(UniqueProcessId);
+    if (!Temp) {
+        PPROCESS_CONTEXT ProcessContext = (PPROCESS_CONTEXT)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_CONTEXT), TAG);
+        if (!ProcessContext) {
+            PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "%s", "ExAllocatePoolWithTag Fail");
+            return STATUS_SUCCESS;
+        }
+
+        RtlZeroMemory(ProcessContext, sizeof(PROCESS_CONTEXT));
+        ProcessContext->Pid = UniqueProcessId;
+        InsertProcessContext(ProcessContext);
+    }
+
+    return InjectOneProcess(UniqueProcessId, Context);
+}
+
+
 NTSTATUS InjectAllProcess(VOID)
 {
-    return EnumProcess(InjectOneProcess, NULL);
+    return EnumProcess(InjectProcess, NULL);
 }
 
 

@@ -119,19 +119,22 @@ PPROCESS_CONTEXT GetProcessContext(HANDLE Pid)
 }
 
 
-VOID UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
+BOOL UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
 /*
 
 */
 {
     PLIST_ENTRY listEntry = NULL;
     PLIST_ENTRY List = &g_ProcessContextList;
+    BOOL IsFind = FALSE;
 
     if (g_IsInitProcessContextList) {
         AcquireResourceExclusive(&g_ProcessContextListResource);
         for (listEntry = List->Flink; listEntry != List; listEntry = listEntry->Flink) {
             PPROCESS_CONTEXT node = CONTAINING_RECORD(listEntry, PROCESS_CONTEXT, ListEntry);
             if (node->Pid == ProcessContext->Pid) {
+                IsFind = TRUE;
+
                 if (ProcessContext->IsCanInject) {
                     node->IsCanInject = ProcessContext->IsCanInject;
                 }
@@ -157,6 +160,12 @@ VOID UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
         }
         ReleaseResource(&g_ProcessContextListResource);
     }
+
+    if (!IsFind) {
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "没有找到进程：%d的上下文", HandleToULong(ProcessContext->Pid));
+    }
+
+    return IsFind;
 }
 
 

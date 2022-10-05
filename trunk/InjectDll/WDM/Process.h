@@ -32,4 +32,5 @@ VOID ProcessNotifyRoutine(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOL
 void InitProcessContextList();
 VOID RemoveProcessContextList();
 PPROCESS_CONTEXT GetProcessContext(HANDLE Pid);
-VOID UpdateProcessContext(PPROCESS_CONTEXT ProcessContext);
+BOOL UpdateProcessContext(PPROCESS_CONTEXT ProcessContext);
+void InsertProcessContext(PPROCESS_CONTEXT Context);

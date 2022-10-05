@@ -211,50 +211,50 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
                         _In_ PIMAGE_INFO ImageInfo
 )
 /*
-功能：在加载kernel32（包括WOW64的\Windows\SysWOW64\kernel32.dll）的时候，利用APC注入一个DLL。
+此时能监控到被注入的DLL。
 
-为了使注入更稳定，兼容win8.1，建议在一个workiten中进行。
+这个时机判断注入成功（进程上下文的IsCanInject）比判断RtlCreateUserThread更准确，可信。
 */
 {
     if (ImageInfo->SystemModeImage) {
         return;
     }
 
-    if (0 == LoadLibraryExWFn || 0 == LoadLibraryExWWow64Fn) {
+    if (0 == LoadLibraryWFn || 0 == LoadLibraryWWow64Fn) {
         GetLoadLibraryExWAddressByPid(ProcessId);
     }
 
-    UNICODE_STRING LoadImageFullName = {0};
-    BOOL IsKernel32 = FALSE;
-
-    RtlGetLoadImageFullName(&LoadImageFullName, FullImageName, ProcessId, ImageInfo);
-
-#ifdef _WIN64
-    if (RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernel32Path, TRUE) == 0 ||
-        RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernelWow64Path, TRUE) == 0) {
-        IsKernel32 = TRUE;
-    }
-#else
-    if (RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernel32Path, TRUE) == 0) {
-        IsKernel32 = TRUE;
-    }
-#endif
+//    UNICODE_STRING LoadImageFullName = {0};
+//    BOOL IsKernel32 = FALSE;
+//
+//    RtlGetLoadImageFullName(&LoadImageFullName, FullImageName, ProcessId, ImageInfo);
+//
+//#ifdef _WIN64
+//    if (RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernel32Path, TRUE) == 0 ||
+//        RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernelWow64Path, TRUE) == 0) {
+//        IsKernel32 = TRUE;
+//    }
+//#else
+//    if (RtlCompareUnicodeString(&LoadImageFullName, &g_DosKernel32Path, TRUE) == 0) {
+//        IsKernel32 = TRUE;
+//    }
+//#endif
 
     PPROCESS_CONTEXT Context = GetProcessContext(ProcessId);
     if (Context) {
-        if (Context->IsCanInject && !Context->IsInjected) {
+        if (!Context->IsInjected) {//Context->IsCanInject && 
             InjectOneProcess(ProcessId, NULL);//总会成功的吧！不选择时机了，失败了也无所谓。
         }
     }
 
-    if (IsKernel32) {
-        PROCESS_CONTEXT Temp = {0};
-        Temp.Pid = ProcessId;
-        Temp.IsCanInject = TRUE;
-        UpdateProcessContext(&Temp);
-    }    
+    //if (IsKernel32) {
+    //    PROCESS_CONTEXT Temp = {0};
+    //    Temp.Pid = ProcessId;
+    //    Temp.IsCanInject = TRUE;
+    //    UpdateProcessContext(&Temp);
+    //}    
 
-    FreeUnicodeString(&LoadImageFullName);
+    //FreeUnicodeString(&LoadImageFullName);
 }
 
 
