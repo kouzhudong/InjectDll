@@ -9,7 +9,7 @@ SIZE_T ApcStateOffset;
 ZwTestAlertT ZwTestAlert;
 ZwQueueApcThreadT g_ZwQueueApcThread;
 ZwQueryVirtualMemory_PFN ZwQueryVirtualMemoryFn;
-
+ZwCreateThreadExFn ZwCreateThreadEx;
 
 
 //#define CopyCode       //复制代码的方式。

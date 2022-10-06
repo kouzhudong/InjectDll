@@ -133,6 +133,7 @@ extern SIZE_T ApcStateOffset;
 extern ZwTestAlertT ZwTestAlert;
 extern ZwQueueApcThreadT g_ZwQueueApcThread;
 extern ZwQueryVirtualMemory_PFN ZwQueryVirtualMemoryFn;
+extern ZwCreateThreadExFn ZwCreateThreadEx;
 
 EXTERN_C BOOL NTAPI PsIsProtectedProcess(PEPROCESS Process);
 EXTERN_C BOOL NTAPI PsIsProtectedProcessLight(PEPROCESS Process);

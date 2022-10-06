@@ -88,7 +88,8 @@ DllPullPath所在的内存是应用层的。
         return STATUS_UNSUCCESSFUL;
     }
     
-    Status = CreateUserThread(Process, LoadLibraryW, (PVOID)DllPullPath, ThreadHandleReturn, ClientId);
+    //Status = CreateUserThread(Process, LoadLibraryW, (PVOID)DllPullPath, ThreadHandleReturn, ClientId);
+    Status = CreateUserThreadEx(Process, LoadLibraryW, (PVOID)DllPullPath, ThreadHandleReturn, ClientId);
     if (NT_SUCCESS(Status)) {
         *UserAddress = (PVOID)DllPullPath;
     }

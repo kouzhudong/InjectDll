@@ -14,8 +14,8 @@ VOID GetSomeSystemRoutineAddress()
 {
     ZwTestAlert = (ZwTestAlertT)GetZwRoutineAddress("ZwTestAlert");
     g_ZwQueueApcThread = (ZwQueueApcThreadT)GetZwRoutineAddress("ZwQueueApcThread");
-    ZwQueryVirtualMemoryFn = (ZwQueryVirtualMemory_PFN)GetZwRoutineAddress("ZwQueryVirtualMemory");
 
+    ZwQueryVirtualMemoryFn = (ZwQueryVirtualMemory_PFN)GetZwRoutineAddress("ZwQueryVirtualMemory");
     SetZwQueryVirtualMemoryAddress(ZwQueryVirtualMemoryFn);
 
     UNICODE_STRING Temp;
@@ -23,6 +23,9 @@ VOID GetSomeSystemRoutineAddress()
     RtlInitUnicodeString(&Temp, L"RtlCreateUserThread");
     RtlCreateUserThread = (RtlCreateUserThreadFn)MmGetSystemRoutineAddress(&Temp);
     SetRtlCreateUserThreadAddress(RtlCreateUserThread);
+
+    ZwCreateThreadEx = (ZwCreateThreadExFn)GetZwRoutineAddress("ZwCreateThreadEx");
+    SetZwCreateThreadExAddress(ZwCreateThreadEx);
 }
 
 
