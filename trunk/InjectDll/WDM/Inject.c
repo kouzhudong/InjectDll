@@ -40,10 +40,10 @@ NTSTATUS InjectAllThread(__in HANDLE UniqueProcessId)
 }
 
 
-NTSTATUS InjectDllByRtlCreateUserThread(_In_ HANDLE Process,
-                                        _Inout_ PHANDLE ThreadHandleReturn,
-                                        _Inout_ PCLIENT_ID ClientId,
-                                        _Inout_ PVOID * UserAddress
+NTSTATUS InjectDllByCreateUserThread(_In_ HANDLE Process,
+                                     _Inout_ PHANDLE ThreadHandleReturn,
+                                     _Inout_ PCLIENT_ID ClientId,
+                                     _Inout_ PVOID * UserAddress
 )
 /*
 
@@ -141,7 +141,7 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
         PVOID UserAddress = NULL;
 
         //InjectAllThread(UniqueProcessId);
-        status = InjectDllByRtlCreateUserThread(UniqueProcessId, &ThreadHandleReturn, &ClientId, &UserAddress);
+        status = InjectDllByCreateUserThread(UniqueProcessId, &ThreadHandleReturn, &ClientId, &UserAddress);
         if (NT_SUCCESS(status)) {
             PROCESS_CONTEXT Temp = {0};
             Temp.Pid = UniqueProcessId;
