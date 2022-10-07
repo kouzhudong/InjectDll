@@ -16,14 +16,42 @@ Inject dll to process in driver
 4. 可卸载。  
    是指驱动，而非被注入的DLL。  
    其实，被注入的DLL可卸载会更简单。不用暴力的遍历进程强制卸载，只需DLL留一个可卸载的IPC接口即可。  
-5. 支持WOW64.  
-6. 尽可能多的注入。  
-   排除没有用户态的进程（Minimal processes，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等）。  
-   Pico processes（如：WSL1.0）不支持。  
-   保护进程（Protected processes）也不建议注入，尽管也可以强制注入（用一些猥亵的手段）。  
-   Native processes（即只准有Ntdll.dll和自身的进程）也不建议注入（本方案暂不支持）。  
-   但是.net(APP),Java等进程还是不放过的。  
-   挂起状态的进程不支持。  
-7. 其他。如：优化，快速，防止多次注入等。  
+5. 尽可能多的注入。  
+   详细的见下。
+6. 预防多次注入。  
+7. 注入的时机。  
+   理论需要是越早越好，实际需求是只要能注入都好。
+   如：TLS的处理。
+8. 支持在操作系统启动的时候开启注入的功能。
+9. 其他。如：优化，快速等。
 
-被注入的DLL的功能在乎你的想象，如：加入HOOK引擎（如微软的Detours）。  
+被注入的DLL的功能在乎你的想象，如：加入HOOK引擎（如微软的Detours等）。  
+
+对被注入进程的处理：
+1. Minimal processes。
+   这类进程没有用户态的空间，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等。
+   所以，这类进程不注入。
+2. Pico processes。
+   如：WSL1.0，不能在原生的Linux程序中注入DLL，要注入也是so，在一个注入的机制（加载模块）的方式也不一定一样。
+   所以，这类进程不注入。
+3. Protected processes。
+   保护进程的目的是保护自己禁止别人破坏，被注入了，都违背了保护进程的目的。
+   所以，这类进程不注入。
+   尽管也可以强制注入（用一些猥亵的手段）。  
+4. Native processes。
+   这类进程的是子系统是Native的用户态EXE，造成的结果是：只有Ntdll.dll和自身。
+   如果注入了这类进程，那都破坏了Native processes的效果，变为非Native processes了。
+   所以，这类进程不注入。
+   本方案暂不支持。
+5. 支持WOW64进程.
+   无需多解释，必须支持。
+6. 托管的进程。
+   如：.net(APP),Java等，甚至是脚本引擎，虚拟机引擎等。
+   必须支持。
+7. 挂起的进程。
+   建议放过。
+   因为你注入即使成功了，也运行不起来的。
+   你变为运行状态了，在加载模块的时机还是可以注入你的。
+
+注入的实际效果：
+winlogon.exe, lsass.exe, 大部分的svchost.exe, msedge.exe(需要签名)，fontdrvhost.exe(需要签名)等进程都能注入。
