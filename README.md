@@ -21,6 +21,7 @@ Inject dll to process in driver
 6. 预防多次注入。  
 7. 注入的时机。  
    理论需要是越早越好，实际需求是只要能注入都好。
+   其实注入的实际越早，越不好处理，有很多的限制。
    如：TLS的处理。
 8. 支持在操作系统启动的时候开启注入的功能。
 9. 其他。如：优化，快速等。
@@ -32,7 +33,7 @@ Inject dll to process in driver
    这类进程没有用户态的空间，如：Secure System, Registry, System Idle Process, System, Interrrupts, Memory Compression等。
    所以，这类进程不注入。
 2. Pico processes。
-   如：WSL1.0，不能在原生的Linux程序中注入DLL，要注入也是so，在一个注入的机制（加载模块）的方式也不一定一样。
+   如：WSL1.0，不能在原生的Linux程序中注入DLL，要注入也是so，再一个注入的机制（加载模块）的方式也不一定一样。
    所以，这类进程不注入。
 3. Protected processes。
    保护进程的目的是保护自己禁止别人破坏，被注入了，都违背了保护进程的目的。
@@ -42,6 +43,7 @@ Inject dll to process in driver
    这类进程的是子系统是Native的用户态EXE，造成的结果是：只有Ntdll.dll和自身。
    如果注入了这类进程，那都破坏了Native processes的效果，变为非Native processes了。
    所以，这类进程不注入。
+   这个需要被注入的DLL的子系统起码也是Native。你是吗？如果是那个这个DLL的功能不强大，有很多的限制。
    本方案暂不支持。
 5. 支持WOW64进程.
    无需多解释，必须支持。
@@ -55,3 +57,13 @@ Inject dll to process in driver
 
 注入的实际效果：
 winlogon.exe, lsass.exe, 大部分的svchost.exe, msedge.exe(需要签名)，fontdrvhost.exe(需要签名)等进程都能注入。
+
+设计思路：
+1. 
+2. 
+3. 
+
+优化思路：
+1. 
+2. 
+3. 
