@@ -189,7 +189,7 @@
       <ControlFlowGuard>false</ControlFlowGuard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);$(ConvertedTargetLibs);$(ConvertedUMLIBS);$(DDK_LIB_PATH)\fltMgr.lib;$(SDK_LIB_PATH)\uuid.lib;$(DDK_LIB_PATH)\Ntstrsafe.lib;$(solutionDir)..\libdrv\Debug\StaticLibraryForDrivers.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);$(ConvertedTargetLibs);$(ConvertedUMLIBS);$(DDK_LIB_PATH)\fltMgr.lib;$(SDK_LIB_PATH)\uuid.lib;$(DDK_LIB_PATH)\Ntstrsafe.lib;$(solutionDir)..\WDM\Debug\libdrv.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- The WrappedTaskItems label is used by the conversion tool to identify the location where items 

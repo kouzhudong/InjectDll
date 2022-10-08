@@ -280,10 +280,12 @@ void BuildDLL()
 #ifdef _WIN64
     GetSystemRootName(&DllWow64, &NtPathWow64, &g_DllDosFullPathWow64);
 #endif  
-
-    ExtraFile("test.sys", RT_RCDATA, 5009, &NtPath);
+    
 #ifdef _WIN64
+    ExtraFile("test.sys", RT_RCDATA, 5009, &NtPath);
     ExtraFile("test.sys", RT_RCDATA, 5010, &NtPathWow64);
+#else
+    ExtraFile("test.sys", RT_RCDATA, 5010, &NtPath);
 #endif    
 
     FreeUnicodeString(&NtPath);

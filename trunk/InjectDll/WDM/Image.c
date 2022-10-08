@@ -11,15 +11,15 @@ UNICODE_STRING g_NtkernelWow64Path = {0};
 UNICODE_STRING g_DosKernelWow64Path = {0};
 
 SIZE_T LoadLibraryExWFn;//某个进程中的L"\\SystemRoot\\System32\\kernel32.dll"里的LoadLibraryExW地址。
-#ifdef _WIN64
+//#ifdef _WIN64
 SIZE_T LoadLibraryExWWow64Fn;//某个WOW64进程中的L"\\SystemRoot\\SysWOW64\\kernel32.dll"里的LoadLibraryExW地址。
-#endif
+//#endif
 
 
 SIZE_T LoadLibraryWFn;//某个进程中的L"\\SystemRoot\\System32\\kernel32.dll"里的LoadLibraryW地址。
-#ifdef _WIN64
+//#ifdef _WIN64
 SIZE_T LoadLibraryWWow64Fn;//某个WOW64进程中的L"\\SystemRoot\\SysWOW64\\kernel32.dll"里的LoadLibraryW地址。
-#endif
+//#endif
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

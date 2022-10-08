@@ -40,7 +40,7 @@ VOID FreeUserMemory(_In_ PPROCESS_CONTEXT Context)
         status = ZwFreeVirtualMemory(Handle, &Context->UserAddress, &Size, MEM_DECOMMIT);
         if (!NT_SUCCESS(status)) {
             Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, Size:%lld",
-                  status, HandleToULong(Context->UniqueProcess), Size);
+                  status, HandleToULong(Context->UniqueProcess), (long long)Size);
             __leave;
         }
     } __finally {
