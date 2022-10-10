@@ -27,6 +27,9 @@ typedef struct _PROCESS_CONTEXT {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+extern PAGED_LOOKASIDE_LIST g_ProcessContextLookasideList;
+
+
 VOID ProcessNotifyRoutine(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOLEAN Create);
 
 void InitProcessContextList();

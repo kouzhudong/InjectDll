@@ -163,7 +163,7 @@ NTSTATUS WINAPI InjectProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Contex
 {
     PPROCESS_CONTEXT Temp = GetProcessContext(UniqueProcessId);
     if (!Temp) {
-        PPROCESS_CONTEXT ProcessContext = (PPROCESS_CONTEXT)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_CONTEXT), TAG);
+        PPROCESS_CONTEXT ProcessContext = (PPROCESS_CONTEXT)ExAllocateFromPagedLookasideList(&g_ProcessContextLookasideList);;
         if (!ProcessContext) {
             PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "%s", "ExAllocatePoolWithTag Fail");
             return STATUS_SUCCESS;

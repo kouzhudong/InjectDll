@@ -5,6 +5,8 @@ LIST_ENTRY g_ProcessContextList;//用于存储注册表上下文的链表。
 ERESOURCE g_ProcessContextListResource;
 BOOL g_IsInitProcessContextList;
 
+PAGED_LOOKASIDE_LIST g_ProcessContextLookasideList;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +67,8 @@ void InitProcessContextList()
     InitializeListHead(&g_ProcessContextList);
     ExInitializeResourceLite(&g_ProcessContextListResource);
     g_IsInitProcessContextList = TRUE;
+
+    ExInitializePagedLookasideList(&g_ProcessContextLookasideList, NULL, NULL, 0, sizeof(PROCESS_CONTEXT), TAG, 0);
 }
 
 
@@ -88,7 +92,7 @@ VOID RemoveProcessContext(PPROCESS_CONTEXT Context)
     RemoveEntryList(&Context->ListEntry);
     ReleaseResource(&g_ProcessContextListResource);
 
-    ExFreePoolWithTag(Context, TAG);
+    ExFreeToPagedLookasideList(&g_ProcessContextLookasideList, Context);
 }
 
 
@@ -183,13 +187,15 @@ VOID RemoveProcessContextList()
             PPROCESS_CONTEXT Context = CONTAINING_RECORD(entry, PROCESS_CONTEXT, ListEntry);
 
             ReleaseResource(&g_ProcessContextListResource);
-            ExFreePoolWithTag(Context, TAG);
+            ExFreeToPagedLookasideList(&g_ProcessContextLookasideList, Context);
             AcquireResourceExclusive(&g_ProcessContextListResource);
         }
         ReleaseResource(&g_ProcessContextListResource);
 
         ExDeleteResourceLite(&g_ProcessContextListResource);
         g_IsInitProcessContextList = FALSE;
+
+        ExDeletePagedLookasideList(&g_ProcessContextLookasideList);
     }
 }
 
@@ -202,7 +208,7 @@ VOID ProcessNotifyRoutine(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOL
     PAGED_CODE();
 
     if (Create) {
-        PPROCESS_CONTEXT Context = (PPROCESS_CONTEXT)ExAllocatePoolWithTag(PagedPool, sizeof(PROCESS_CONTEXT), TAG);
+        PPROCESS_CONTEXT Context = (PPROCESS_CONTEXT)ExAllocateFromPagedLookasideList(&g_ProcessContextLookasideList);;
         if (Context) {
             RtlZeroMemory(Context, sizeof(PROCESS_CONTEXT));
             Context->Pid = ProcessId;
