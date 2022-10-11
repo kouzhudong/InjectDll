@@ -293,24 +293,21 @@ void BuildDLL()
     */
 
 #ifdef _WIN64
-    UNICODE_STRING SystemRootNtPathWow64 = {0};
-    UNICODE_STRING SystemRootDosPathWow64 = {0};
     UNICODE_STRING DllWow64 = RTL_CONSTANT_STRING(L"\\SysWOW64\\hook.dll");
-    GetSystemRootName(&DllWow64, &SystemRootNtPathWow64, &SystemRootDosPathWow64);
 
     UNICODE_STRING DllNtFullPathWow64 = {0};
-    DllNtFullPathWow64.MaximumLength = SystemRootNtPathWow64.MaximumLength + DllWow64.MaximumLength;
+    DllNtFullPathWow64.MaximumLength = SystemRootNtPath.MaximumLength + DllWow64.MaximumLength;
     Status = AllocateUnicodeString(&DllNtFullPathWow64);
     ASSERT(NT_SUCCESS(Status));
-    RtlCopyUnicodeString(&DllNtFullPathWow64, &SystemRootNtPathWow64);
+    RtlCopyUnicodeString(&DllNtFullPathWow64, &SystemRootNtPath);
     ASSERT(NT_SUCCESS(Status));
     Status = RtlAppendUnicodeStringToString(&DllNtFullPathWow64, &DllWow64);
     ASSERT(NT_SUCCESS(Status));
 
-    g_DllDosFullPathWow64.MaximumLength = SystemRootDosPathWow64.MaximumLength + DllWow64.MaximumLength;
+    g_DllDosFullPathWow64.MaximumLength = SystemRootDosPath.MaximumLength + DllWow64.MaximumLength;
     Status = AllocateUnicodeString(&g_DllDosFullPathWow64);
     ASSERT(NT_SUCCESS(Status));
-    RtlCopyUnicodeString(&g_DllDosFullPathWow64, &SystemRootDosPathWow64);
+    RtlCopyUnicodeString(&g_DllDosFullPathWow64, &SystemRootDosPath);
     ASSERT(NT_SUCCESS(Status));
     Status = RtlAppendUnicodeStringToString(&g_DllDosFullPathWow64, &DllWow64);
     ASSERT(NT_SUCCESS(Status));
@@ -328,8 +325,6 @@ void BuildDLL()
     FreeUnicodeString(&SystemRootDosPath);
 
 #ifdef _WIN64
-    FreeUnicodeString(&SystemRootNtPathWow64);
-    FreeUnicodeString(&SystemRootDosPathWow64);
     FreeUnicodeString(&DllNtFullPathWow64);
 #endif  
 }
