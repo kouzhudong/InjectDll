@@ -265,31 +265,71 @@ PUNICODE_STRING g_RegistryPath;
 
 void BuildDLL()
 {
-    UNICODE_STRING Dll = RTL_CONSTANT_STRING(L"\\SystemRoot\\System32\\dll.dll");
-    UNICODE_STRING DllWow64 = RTL_CONSTANT_STRING(L"\\SystemRoot\\SysWOW64\\dll.dll");
+    UNICODE_STRING SystemRoot = RTL_CONSTANT_STRING(L"\\SystemRoot"); 
+    UNICODE_STRING SystemRootNtPath = {0};
+    UNICODE_STRING SystemRootDosPath = {0};
+    GetSystemRootName(&SystemRoot, &SystemRootNtPath, &SystemRootDosPath);
 
-    UNICODE_STRING NtPath = {0};
-    UNICODE_STRING NtPathWow64 = {0};
+    UNICODE_STRING DllNtFullPath = {0};    
+    UNICODE_STRING Dll = RTL_CONSTANT_STRING(L"\\System32\\hook.dll");
+    DllNtFullPath.MaximumLength = SystemRootNtPath.MaximumLength + Dll.MaximumLength;
+    NTSTATUS Status = AllocateUnicodeString(&DllNtFullPath);
+    ASSERT(NT_SUCCESS(Status));
+    RtlCopyUnicodeString(&DllNtFullPath, &SystemRootNtPath);
+    ASSERT(NT_SUCCESS(Status));
+    Status = RtlAppendUnicodeStringToString(&DllNtFullPath, &Dll);
+    ASSERT(NT_SUCCESS(Status));
 
-    GetSystemRootName(&Dll, &NtPath, &g_DllDosFullPath);
+    g_DllDosFullPath.MaximumLength = SystemRootDosPath.MaximumLength + Dll.MaximumLength;
+    Status = AllocateUnicodeString(&g_DllDosFullPath);
+    ASSERT(NT_SUCCESS(Status));
+    RtlCopyUnicodeString(&g_DllDosFullPath, &SystemRootDosPath);
+    ASSERT(NT_SUCCESS(Status));
+    Status = RtlAppendUnicodeStringToString(&g_DllDosFullPath, &Dll);
+    ASSERT(NT_SUCCESS(Status));
 
     /*
     可以把把DLL内嵌在SYS的资源里面，然后用：LdrFindResource_U/LdrAccessResource/LdrEnumResources等函数获取，然后在ZwCreateFile一个。
     */
 
 #ifdef _WIN64
-    GetSystemRootName(&DllWow64, &NtPathWow64, &g_DllDosFullPathWow64);
+    UNICODE_STRING SystemRootNtPathWow64 = {0};
+    UNICODE_STRING SystemRootDosPathWow64 = {0};
+    UNICODE_STRING DllWow64 = RTL_CONSTANT_STRING(L"\\SysWOW64\\hook.dll");
+    GetSystemRootName(&DllWow64, &SystemRootNtPathWow64, &SystemRootDosPathWow64);
+
+    UNICODE_STRING DllNtFullPathWow64 = {0};
+    DllNtFullPathWow64.MaximumLength = SystemRootNtPathWow64.MaximumLength + DllWow64.MaximumLength;
+    Status = AllocateUnicodeString(&DllNtFullPathWow64);
+    ASSERT(NT_SUCCESS(Status));
+    RtlCopyUnicodeString(&DllNtFullPathWow64, &SystemRootNtPathWow64);
+    ASSERT(NT_SUCCESS(Status));
+    Status = RtlAppendUnicodeStringToString(&DllNtFullPathWow64, &DllWow64);
+    ASSERT(NT_SUCCESS(Status));
+
+    g_DllDosFullPathWow64.MaximumLength = SystemRootDosPathWow64.MaximumLength + DllWow64.MaximumLength;
+    Status = AllocateUnicodeString(&g_DllDosFullPathWow64);
+    ASSERT(NT_SUCCESS(Status));
+    RtlCopyUnicodeString(&g_DllDosFullPathWow64, &SystemRootDosPathWow64);
+    ASSERT(NT_SUCCESS(Status));
+    Status = RtlAppendUnicodeStringToString(&g_DllDosFullPathWow64, &DllWow64);
+    ASSERT(NT_SUCCESS(Status));
 #endif  
     
 #ifdef _WIN64
-    ExtraFile("test.sys", RT_RCDATA, 5009, &NtPath);
-    ExtraFile("test.sys", RT_RCDATA, 5010, &NtPathWow64);
+    ExtraFile("test.sys", RT_RCDATA, 5009, &DllNtFullPath);
+    ExtraFile("test.sys", RT_RCDATA, 5010, &DllNtFullPathWow64);
 #else
-    ExtraFile("test.sys", RT_RCDATA, 5010, &NtPath);
+    ExtraFile("test.sys", RT_RCDATA, 5010, &DllNtFullPath);
 #endif    
 
-    FreeUnicodeString(&NtPath);
+    FreeUnicodeString(&DllNtFullPath);
+    FreeUnicodeString(&SystemRootNtPath);
+    FreeUnicodeString(&SystemRootDosPath);
+
 #ifdef _WIN64
-    FreeUnicodeString(&NtPathWow64);
+    FreeUnicodeString(&SystemRootNtPathWow64);
+    FreeUnicodeString(&SystemRootDosPathWow64);
+    FreeUnicodeString(&DllNtFullPathWow64);
 #endif  
 }

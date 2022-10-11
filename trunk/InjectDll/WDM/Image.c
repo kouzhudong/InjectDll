@@ -126,11 +126,21 @@ L"\\SystemRoot\\SysWOW64\\kernel32.dll"
     //}
 
     if (IsWow64Process(UniqueProcess)) {
-        LoadLibraryWWow64Fn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_NtkernelWow64Path.Buffer, "LoadLibraryW");
-        LoadLibraryExWWow64Fn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_NtkernelWow64Path.Buffer, "LoadLibraryExW");
+        if (0 == LoadLibraryWWow64Fn) {
+            LoadLibraryWWow64Fn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_NtkernelWow64Path.Buffer, "LoadLibraryW");
+        }
+
+        if (0 == LoadLibraryExWWow64Fn) {
+            LoadLibraryExWWow64Fn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_NtkernelWow64Path.Buffer, "LoadLibraryExW");
+        }
     } else {
-        LoadLibraryWFn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_Ntkernel32Path.Buffer, "LoadLibraryW");
-        LoadLibraryExWFn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_Ntkernel32Path.Buffer, "LoadLibraryExW");
+        if (0 == LoadLibraryWFn) {
+            LoadLibraryWFn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_Ntkernel32Path.Buffer, "LoadLibraryW");
+        }
+
+        if (0 == LoadLibraryExWFn) {
+            LoadLibraryExWFn = (SIZE_T)GetUserFunctionAddress(UniqueProcess, g_Ntkernel32Path.Buffer, "LoadLibraryExW");
+        }
     }
 
     //方法二的测试：不支持WOW64。
@@ -186,7 +196,11 @@ NTSTATUS WINAPI GetLoadLibraryExWAddressCallBack(_In_ HANDLE UniqueProcessId, _I
         //IsSecureProcess
 
         PVOID UserRoutine = GetLoadLibraryExWAddressByPid(UniqueProcessId);
-        if (LoadLibraryExWFn && LoadLibraryExWWow64Fn && LoadLibraryWFn && LoadLibraryWWow64Fn) {
+        if (LoadLibraryExWFn && LoadLibraryWFn
+        #ifdef _WIN64
+            && LoadLibraryExWWow64Fn && LoadLibraryWWow64Fn
+        #endif  
+            ) {
             status = STATUS_SUCCESS;//停止遍历。
         }
     } __finally {
@@ -220,7 +234,11 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
         return;
     }
 
-    if (0 == LoadLibraryWFn || 0 == LoadLibraryWWow64Fn) {
+    if (0 == LoadLibraryWFn
+    #ifdef _WIN64
+        || 0 == LoadLibraryWWow64Fn
+    #endif 
+        ) {
         GetLoadLibraryExWAddressByPid(ProcessId);
     }
 
