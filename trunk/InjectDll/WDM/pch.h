@@ -9,6 +9,7 @@
 
 #define TAG  'tset' //test
 
+#define POOL_NX_OPTIN 1
 
 #define RT_RCDATA 10
 

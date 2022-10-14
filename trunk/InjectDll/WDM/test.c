@@ -89,6 +89,8 @@ NTSTATUS DriverEntry(__in struct _DRIVER_OBJECT * DriverObject, __in PUNICODE_ST
         KdBreakPoint();//__debugbreak();
     }
 
+    UseNoExecuteMemory();
+
     //  Default to NonPagedPoolNx for non paged pool allocations where supported.   
     ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
 
