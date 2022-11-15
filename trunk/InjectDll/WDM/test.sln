@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dll", "..\dll\dll\dll.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libdrv", "..\libdrv\libdrv\libdrv.vcxproj", "{09A5F599-A62A-4FE0-BAE2-7A38206A450C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Console", "..\Console\Console.vcxproj", "{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -113,6 +115,18 @@ Global
 		{09A5F599-A62A-4FE0-BAE2-7A38206A450C}.Release|x64.ActiveCfg = Release|x64
 		{09A5F599-A62A-4FE0-BAE2-7A38206A450C}.Release|x64.Build.0 = Release|x64
 		{09A5F599-A62A-4FE0-BAE2-7A38206A450C}.Release|x64.Deploy.0 = Release|x64
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|ARM.ActiveCfg = Debug|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|Win32.Build.0 = Debug|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|x64.ActiveCfg = Debug|x64
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Debug|x64.Build.0 = Debug|x64
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|ARM.ActiveCfg = Release|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|ARM64.ActiveCfg = Release|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|Win32.ActiveCfg = Release|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|Win32.Build.0 = Release|Win32
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|x64.ActiveCfg = Release|x64
+		{05A6B118-EEF8-45C9-A5FE-A26BF62B94DA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
