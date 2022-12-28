@@ -1,7 +1,7 @@
 #include "Process.h"
 
 
-LIST_ENTRY g_ProcessContextList;//сцсз╢Ф╢╒в╒╡А╠Миообнд╣да╢╠М║ё
+LIST_ENTRY g_ProcessContextList;//Г■╗Д╨▌Е╜≤Е┌╗ФЁ╗Е├▄Х║╗Д╦┼Д╦▀Ф√┤Г └И⌠╬Х║╗Ц─┌
 ERESOURCE g_ProcessContextListResource;
 BOOL g_IsInitProcessContextList;
 
@@ -55,13 +55,13 @@ ReleaseResource(_Inout_ _Requires_lock_held_(*Resource) _Releases_lock_(*Resourc
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-╫ЬЁлиообнд║ё
+Х©⌡Г╗▀Д╦┼Д╦▀Ф√┤Ц─┌
 */
 
 
 void InitProcessContextList()
 /*
-╣Всцй╠╩Зё╨гЩ╤╞хК©з║ё
+Х╟┐Г■╗Ф≈╤Ф°╨О╪ И╘╠Е┼╗Е┘╔Е▐ёЦ─┌
 */
 {
     InitializeListHead(&g_ProcessContextList);
@@ -74,7 +74,7 @@ void InitProcessContextList()
 
 void InsertProcessContext(PPROCESS_CONTEXT Context)
 /*
-╣Всцй╠╩Зё╨кЫспCmSetCallbackObjectContext╣ВсцЁи╧╕╣д╣ь╥╫║ё
+Х╟┐Г■╗Ф≈╤Ф°╨О╪ Ф┴─Ф°┴CmSetCallbackObjectContextХ╟┐Г■╗Ф┬░Е┼÷Г └Е°╟Ф√╧Ц─┌
 */
 {
     AcquireResourceExclusive(&g_ProcessContextListResource);
@@ -85,7 +85,7 @@ void InsertProcessContext(PPROCESS_CONTEXT Context)
 
 VOID RemoveProcessContext(PPROCESS_CONTEXT Context)
 /*
-╣Всцй╠╩Зё╨RegNtCallbackObjectContextCleanup║ё
+Х╟┐Г■╗Ф≈╤Ф°╨О╪ RegNtCallbackObjectContextCleanupЦ─┌
 */
 {
     AcquireResourceExclusive(&g_ProcessContextListResource);
@@ -98,9 +98,9 @@ VOID RemoveProcessContext(PPROCESS_CONTEXT Context)
 
 PPROCESS_CONTEXT GetProcessContext(HANDLE Pid)
 /*
-╧╕дэё╨йм╥её╗кЫсп╣дё╘в╒╡А╠М╣диообнд║ё
+Е┼÷Х┐╫О╪ И┤┼Ф■╬О╪┬Ф┴─Ф°┴Г └О╪┴ФЁ╗Е├▄Х║╗Г └Д╦┼Д╦▀Ф√┤Ц─┌
 
-╣Всцй╠╩Зё╨гЩ╤╞п╤ть║ё
+Х╟┐Г■╗Ф≈╤Ф°╨О╪ И╘╠Е┼╗Е█╦Х╫╫Ц─┌
 */
 {
     PPROCESS_CONTEXT ret = NULL;
@@ -166,7 +166,7 @@ BOOL UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
     }
 
     if (!IsFind) {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "ц╩спур╣╫╫ЬЁлё╨%d╣диообнд", HandleToULong(ProcessContext->Pid));
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "Ф╡║Ф°┴Ф┴╬Е┬╟Х©⌡Г╗▀О╪ %dГ └Д╦┼Д╦▀Ф√┤", HandleToULong(ProcessContext->Pid));
     }
 
     return IsFind;
@@ -175,9 +175,9 @@ BOOL UpdateProcessContext(PPROCESS_CONTEXT ProcessContext)
 
 VOID RemoveProcessContextList()
 /*
-╧╕дэё╨йм╥её╗кЫсп╣дё╘в╒╡А╠М╣диообнд║ё
+Е┼÷Х┐╫О╪ И┤┼Ф■╬О╪┬Ф┴─Ф°┴Г └О╪┴ФЁ╗Е├▄Х║╗Г └Д╦┼Д╦▀Ф√┤Ц─┌
 
-╣Всцй╠╩Зё╨гЩ╤╞п╤ть║ё
+Х╟┐Г■╗Ф≈╤Ф°╨О╪ И╘╠Е┼╗Е█╦Х╫╫Ц─┌
 */
 {
     if (g_IsInitProcessContextList) {
