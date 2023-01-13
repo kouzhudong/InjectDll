@@ -2,7 +2,7 @@
 #include "..\libdrv\inc\lib.h"
 
 
-UNICODE_STRING g_DllDosFullPath;//±»×¢ÈëDLLµÄÈ«Â·¾¶(DOS¸ñÊ½)¡£
+UNICODE_STRING g_DllDosFullPath;//è¢«æ³¨å…¥DLLçš„å…¨è·¯å¾„(DOSæ ¼å¼)ã€‚
 UNICODE_STRING g_DllDosFullPathWow64;
 
 
@@ -11,17 +11,17 @@ PUNICODE_STRING g_RegistryPath;
 
 //BOOLEAN create_dll_XXX(IN UNICODE_STRING * FileName, IN UNICODE_STRING * newFileName) //CONST
 //    /*
-//    ²ÎÊıµÄĞÎÊ½ÊÇ£º"\Device\HarddiskVolume1\XXX»òÕß\\??\\c:\\WINDOWS\\system32\\config\\SAM¡£
+//    å‚æ•°çš„å½¢å¼æ˜¯ï¼š"\Device\HarddiskVolume1\XXXæˆ–è€…\\??\\c:\\WINDOWS\\system32\\config\\SAMã€‚
 //
-//    ¹¦ÄÜ£º¸´ÖÆ¶ÀÕ¼Ê½µÄºÍ±»Ëø¶¨£¨ZwLockFile£©µÄÎÄ¼ş¡£
+//    åŠŸèƒ½ï¼šå¤åˆ¶ç‹¬å å¼çš„å’Œè¢«é”å®šï¼ˆZwLockFileï¼‰çš„æ–‡ä»¶ã€‚
 //
-//    ËµÃ÷£º
-//    1.IoCreateFileExº¯ÊıÓĞIO_IGNORE_SHARE_ACCESS_CHECK¹¦ÄÜ£¬¿ÉÊÇThis routine is available starting with Windows Vista.
-//    2.ÓÉÓÚ×¨ÃÅ¸´ÖÆ±»¶ÀÕ¼Ê½Ê¹ÓÃµÄÎÄ¼ş£¬Èç·ÖÒ³ÎÄ¼ş£¨ÕıÔÚÊ¹ÓÃµÄpagefile.sys£©ºÍ¸÷ÖÖ±»ÕıÔÚÊ¹ÓÃHIVEÎÄ¼ş.
-//    3.À©Õ¹¹¦ÄÜ£ºÈçÉ¾³ıÎÄ¼ş£¨´ò¿ªµÄÊ±ºò´øÓĞÉ¾³ıµÄÊôĞÔ£ºFILE_DELETE_ON_CLOSE £©¹À¼ÆÒ²¿ÉÒÔµÄ£¬Õâ¸ö²»ÓÃ·¢ËÍIRP£¬ÖÁÉÙÔÚĞÎÊ½ÉÏ¡£
+//    è¯´æ˜ï¼š
+//    1.IoCreateFileExå‡½æ•°æœ‰IO_IGNORE_SHARE_ACCESS_CHECKåŠŸèƒ½ï¼Œå¯æ˜¯This routine is available starting with Windows Vista.
+//    2.ç”±äºä¸“é—¨å¤åˆ¶è¢«ç‹¬å å¼ä½¿ç”¨çš„æ–‡ä»¶ï¼Œå¦‚åˆ†é¡µæ–‡ä»¶ï¼ˆæ­£åœ¨ä½¿ç”¨çš„pagefile.sysï¼‰å’Œå„ç§è¢«æ­£åœ¨ä½¿ç”¨HIVEæ–‡ä»¶.
+//    3.æ‰©å±•åŠŸèƒ½ï¼šå¦‚åˆ é™¤æ–‡ä»¶ï¼ˆæ‰“å¼€çš„æ—¶å€™å¸¦æœ‰åˆ é™¤çš„å±æ€§ï¼šFILE_DELETE_ON_CLOSE ï¼‰ä¼°è®¡ä¹Ÿå¯ä»¥çš„ï¼Œè¿™ä¸ªä¸ç”¨å‘é€IRPï¼Œè‡³å°‘åœ¨å½¢å¼ä¸Šã€‚
 //
-//    ´æÔÚµÄÈ±µãÓĞ:
-//    1.Ã»ÓĞ¸´ÖÆÎÄ¼şµÄÊôĞÔ,Èç:ÎÄ¼şµÄËùÓĞÕßµÈĞÅÏ¢.
+//    å­˜åœ¨çš„ç¼ºç‚¹æœ‰:
+//    1.æ²¡æœ‰å¤åˆ¶æ–‡ä»¶çš„å±æ€§,å¦‚:æ–‡ä»¶çš„æ‰€æœ‰è€…ç­‰ä¿¡æ¯.
 //    */
 //{
 //    BOOLEAN b = FALSE;
@@ -77,7 +77,7 @@ PUNICODE_STRING g_RegistryPath;
 //                                                 FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
 //                                                 &ffai,
 //                                                 sizeof(FILE_FULL_EA_INFORMATION),
-//                                                 CreateFileTypeNone,//ÆäÊµÃüÃû¹ÜµÀºÍÓÊ¼ş²ÛÒ²¶¨ÒåÁË¡£
+//                                                 CreateFileTypeNone,//å…¶å®å‘½åç®¡é“å’Œé‚®ä»¶æ§½ä¹Ÿå®šä¹‰äº†ã€‚
 //                                                 NULL,
 //                                                 /*
 //                                                 Indicates that the I/O manager should not perform share-access checks on the file object after it is created.
@@ -102,9 +102,9 @@ PUNICODE_STRING g_RegistryPath;
 //        return b;
 //    }
 //
-//    //¿ÉÒÔ¿¼ÂÇÔÚÕâÀï¸øÎÄ¼ş¼ÓËø,±£»¤,²»ÈÃ±ğµÄ²Ù×÷ÔÙĞ´Èë.ZwLockFile,ÔÙÔÚÊÊµ±µÄÊ±ºò½âËø:ZwUnlockFile.
-//    //¿ÉÊÇThis routine is available in Windows 7 and later versions of the Windows operating system.
-//    //²»¹ıNtLockFileºÍNtUnlockFileÔÚXPÏÂµ¼³ö£¬¿ÉÒÔÊ¹ÓÃ¡£
+//    //å¯ä»¥è€ƒè™‘åœ¨è¿™é‡Œç»™æ–‡ä»¶åŠ é”,ä¿æŠ¤,ä¸è®©åˆ«çš„æ“ä½œå†å†™å…¥.ZwLockFile,å†åœ¨é€‚å½“çš„æ—¶å€™è§£é”:ZwUnlockFile.
+//    //å¯æ˜¯This routine is available in Windows 7 and later versions of the Windows operating system.
+//    //ä¸è¿‡NtLockFileå’ŒNtUnlockFileåœ¨XPä¸‹å¯¼å‡ºï¼Œå¯ä»¥ä½¿ç”¨ã€‚
 //
 //    status = ZwQueryInformationFile(FileHandle, &IoStatusBlock, &fsi, sizeof(FILE_STANDARD_INFORMATION), FileStandardInformation);
 //    if (!NT_SUCCESS(status)) {
@@ -113,7 +113,7 @@ PUNICODE_STRING g_RegistryPath;
 //        return b;;
 //    }
 //
-//    //ĞÂ½¨ÎÄ¼ş.
+//    //æ–°å»ºæ–‡ä»¶.
 //    CreateDisposition = FILE_OVERWRITE_IF;
 //    InitializeObjectAttributes(&ob, newFileName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, 0, 0);
 //    status = ZwCreateFile(&DestinationFileHandle,
@@ -136,14 +136,14 @@ PUNICODE_STRING g_RegistryPath;
 //        return b;
 //    }
 //
-//    //ÎÄ¼ş´óĞ¡ÎªÁã£¬¾Í½áÊøÁË¡£
+//    //æ–‡ä»¶å¤§å°ä¸ºé›¶ï¼Œå°±ç»“æŸäº†ã€‚
 //    if (fsi.EndOfFile.QuadPart == 0) {
 //        ZwClose(FileHandle);
 //        ZwClose(DestinationFileHandle);
 //        return TRUE;
 //    }
 //
-//    //²»´¦Àí´óÓÚ4GµÄÎÄ¼ş¡£
+//    //ä¸å¤„ç†å¤§äº4Gçš„æ–‡ä»¶ã€‚
 //    if (fsi.EndOfFile.HighPart != 0) {
 //        ZwClose(FileHandle);
 //        ZwClose(DestinationFileHandle);
@@ -151,17 +151,17 @@ PUNICODE_STRING g_RegistryPath;
 //    }
 //
 //    file_size = fsi.EndOfFile;
-//    //Length = PAGE_SIZE;//²âÊÔ×¨ÓÃ¡£
-//    //Buffer = ExAllocatePoolWithTag(NonPagedPool, Length, TAG);//Length == 0Ê±¼ÓÇı¶¯ÑéÖ¤Æ÷£¬ÕâÀï»áÀ¶ÆÁ¡£
+//    //Length = PAGE_SIZE;//æµ‹è¯•ä¸“ç”¨ã€‚
+//    //Buffer = ExAllocatePoolWithTag(NonPagedPool, Length, TAG);//Length == 0æ—¶åŠ é©±åŠ¨éªŒè¯å™¨ï¼Œè¿™é‡Œä¼šè“å±ã€‚
 //    //if (Buffer == NULL) { 
 //    //    status = STATUS_UNSUCCESSFUL;
-//    //    DbgPrint("·¢Éú´íÎóµÄÎÄ¼şÎª:%s, ´úÂëĞĞÎª:%d\n", __FILE__, __LINE__);
+//    //    DbgPrint("å‘ç”Ÿé”™è¯¯çš„æ–‡ä»¶ä¸º:%s, ä»£ç è¡Œä¸º:%d\n", __FILE__, __LINE__);
 //    //    ZwClose(FileHandle);
 //    //    ZwClose(DestinationFileHandle);
 //    //    return b;
 //    //}
 //
-//    InitializeObjectAttributes(&ob, NULL, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, 0, 0);//¾ø¶Ô²»¿ÉÒÔÔÚÕâÀïÉèÖÃÂ·¾¶¡£
+//    InitializeObjectAttributes(&ob, NULL, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, 0, 0);//ç»å¯¹ä¸å¯ä»¥åœ¨è¿™é‡Œè®¾ç½®è·¯å¾„ã€‚
 //    status = ZwCreateSection(&SectionHandle,
 //                             SECTION_MAP_READ | SECTION_QUERY,
 //                             &ob,
@@ -178,8 +178,8 @@ PUNICODE_STRING g_RegistryPath;
 //    }
 //
 //    /*
-//    ±¾ÏëÒ»Ò³Êı¾İÒ»Ò³Êı¾İµÄ¶ÁÈ¡µÄ¡£
-//    ÏÖÔÚÊÇÕû¸öÈ«²¿¶ÁÈ¡ÁË¡£
+//    æœ¬æƒ³ä¸€é¡µæ•°æ®ä¸€é¡µæ•°æ®çš„è¯»å–çš„ã€‚
+//    ç°åœ¨æ˜¯æ•´ä¸ªå…¨éƒ¨è¯»å–äº†ã€‚
 //    */
 //    //for ( ;ByteOffset.QuadPart < file_size.QuadPart ; ) 
 //    {
@@ -191,7 +191,7 @@ PUNICODE_STRING g_RegistryPath;
 //        //RtlZeroMemory(Buffer, Length);
 //
 //        //status = ZwReadFile(FileHandle, NULL, NULL, NULL, &IoStatusBlock, Buffer, Length, &ByteOffset, NULL);
-//        //if (!NT_SUCCESS (status)) //¶ÔÓÚ´øËøµÄÎÄ¼şµÄ´ò¿ª»áÊ§°Ü¡£
+//        //if (!NT_SUCCESS (status)) //å¯¹äºå¸¦é”çš„æ–‡ä»¶çš„æ‰“å¼€ä¼šå¤±è´¥ã€‚
 //        //{
 //        //    KdPrint(("ZwReadFile fail with 0x%x.\n", status));
 //        //    ExFreePoolWithTag(Buffer, TAG);
@@ -200,7 +200,7 @@ PUNICODE_STRING g_RegistryPath;
 //        //    return b;
 //        //}
 //
-//        //×¢Òâ£ºÕâÀïµÄÈ¨ÏŞºÍÉÏÃæµÄÈ¨ÏŞÒª¶ÔÓ¦¡£
+//        //æ³¨æ„ï¼šè¿™é‡Œçš„æƒé™å’Œä¸Šé¢çš„æƒé™è¦å¯¹åº”ã€‚
 //        status = ZwMapViewOfSection(SectionHandle,
 //                                    ZwCurrentProcess(),
 //                                    &BaseAddress,
@@ -221,21 +221,21 @@ PUNICODE_STRING g_RegistryPath;
 //        }
 //
 //        i = *(int *)BaseAddress;
-//        BaseAddress2 = GetImageBase("test.sys");//ÉÏÃæµÄZwMapViewOfSectionµÈ¼¸¸öº¯ÊıÊÇÃ»ÓĞÓÃµÄ¡£
+//        BaseAddress2 = GetImageBase("test.sys");//ä¸Šé¢çš„ZwMapViewOfSectionç­‰å‡ ä¸ªå‡½æ•°æ˜¯æ²¡æœ‰ç”¨çš„ã€‚
 //
-//        //»ñÈ¡DLLµÄÄÚÈİ¡£
-//        //ResourceDataEntry = (PIMAGE_RESOURCE_DATA_ENTRY)ExAllocatePoolWithTag( NonPagedPool, fsi.EndOfFile.LowPart, TAG);//ntdll.dllÖĞµÄLdrFindResource_Uº¯ÊıµÄÕâ¸öº¯ÊıĞèÒªÉêÇë£¬·ñÔòÒì³£¡£
+//        //è·å–DLLçš„å†…å®¹ã€‚
+//        //ResourceDataEntry = (PIMAGE_RESOURCE_DATA_ENTRY)ExAllocatePoolWithTag( NonPagedPool, fsi.EndOfFile.LowPart, TAG);//ntdll.dllä¸­çš„LdrFindResource_Uå‡½æ•°çš„è¿™ä¸ªå‡½æ•°éœ€è¦ç”³è¯·ï¼Œå¦åˆ™å¼‚å¸¸ã€‚
 //        //ASSERT(ResourceDataEntry);
 //        //RtlZeroMemory(ResourceDataEntry, fsi.EndOfFile.LowPart);
 //        ResourceIdPath[0] = 10;//RT_RCDATA RCDATA 10
 //        ResourceIdPath[1] = 0x1391;//0x1391 == 5009
 //        ResourceIdPath[2] = 0;
-//        status = LdrFindResource_U(BaseAddress2, ResourceIdPath, 3, &ResourceDataEntry);//ÓÃZwMapViewOfSection·µ»Øc000008a
+//        status = LdrFindResource_U(BaseAddress2, ResourceIdPath, 3, &ResourceDataEntry);//ç”¨ZwMapViewOfSectionè¿”å›c000008a
 //        ASSERT(NT_SUCCESS(status));
 //        status = LdrAccessResource(BaseAddress2, ResourceDataEntry, &MessageData, &Size);
 //        ASSERT(NT_SUCCESS(status));
 //
-//        //Èç¹ûÒª´¦Àí´óÓÚ4GµÄÊı¾İÇë¼Ó¸öÑ­»·¡£²»¹ı´óÓÚ4GµÄÊı¾İÒ²ºÜÄÑÓ³Éä³É¹¦¡£
+//        //å¦‚æœè¦å¤„ç†å¤§äº4Gçš„æ•°æ®è¯·åŠ ä¸ªå¾ªç¯ã€‚ä¸è¿‡å¤§äº4Gçš„æ•°æ®ä¹Ÿå¾ˆéš¾æ˜ å°„æˆåŠŸã€‚
 //        status = ZwWriteFile(DestinationFileHandle, NULL, NULL, NULL, &IoStatusBlock, MessageData, Size, &ByteOffset, NULL);
 //        if (!NT_SUCCESS(status)) {
 //            KdPrint(("ZwWriteFile fail with 0x%x.\n", status));
@@ -250,7 +250,7 @@ PUNICODE_STRING g_RegistryPath;
 //
 //        //ByteOffset.QuadPart += IoStatusBlock.Information;
 //
-//        //ExFreePoolWithTag(ResourceDataEntry, TAG );//Õâ¸ö²»ĞèÒªÊÍ·Å£¬·ñÔòÀ¶ÆÁ¡£ÓÃ·¨¼û£ºExpInitializeExecutiveº¯ÊıÔ´Âë¡£
+//        //ExFreePoolWithTag(ResourceDataEntry, TAG );//è¿™ä¸ªä¸éœ€è¦é‡Šæ”¾ï¼Œå¦åˆ™è“å±ã€‚ç”¨æ³•è§ï¼šExpInitializeExecutiveå‡½æ•°æºç ã€‚
 //        ZwUnmapViewOfSection(NtCurrentProcess(), BaseAddress);
 //    }
 //
@@ -289,7 +289,7 @@ void BuildDLL()
     ASSERT(NT_SUCCESS(Status));
 
     /*
-    ¿ÉÒÔ°Ñ°ÑDLLÄÚÇ¶ÔÚSYSµÄ×ÊÔ´ÀïÃæ£¬È»ºóÓÃ£ºLdrFindResource_U/LdrAccessResource/LdrEnumResourcesµÈº¯Êı»ñÈ¡£¬È»ºóÔÚZwCreateFileÒ»¸ö¡£
+    å¯ä»¥æŠŠæŠŠDLLå†…åµŒåœ¨SYSçš„èµ„æºé‡Œé¢ï¼Œç„¶åç”¨ï¼šLdrFindResource_U/LdrAccessResource/LdrEnumResourcesç­‰å‡½æ•°è·å–ï¼Œç„¶ååœ¨ZwCreateFileä¸€ä¸ªã€‚
     */
 
 #ifdef _WIN64

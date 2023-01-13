@@ -18,10 +18,10 @@
 
 
 /*
-Ò»ÏÂ¶¨ÒåÕª×Ô£º
-C:\Program Files (x86)\Windows Kits\8.0\Include\um\winternl.h»òÕß
+ä¸€ä¸‹å®šä¹‰æ‘˜è‡ªï¼š
+C:\Program Files (x86)\Windows Kits\8.0\Include\um\winternl.hæˆ–è€…
 C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include\winternl.h
-¸ü¶àµÄĞÅÏ¢£¬¿É¿´£º
+æ›´å¤šçš„ä¿¡æ¯ï¼Œå¯çœ‹ï¼š
 http://undocumented.ntinternals.net/UserMode/Undocumented%20Functions/System%20Information/SYSTEM_INFORMATION_CLASS.html#SystemProcessInformation
 http://doxygen.reactos.org/d2/d5c/ntddk__ex_8h_source.html
 */
@@ -38,7 +38,7 @@ typedef enum _SYSTEM_INFORMATION_CLASS {
 } SYSTEM_INFORMATION_CLASS;
 
 
-//Õª×Ô£ºhttp://msdn.microsoft.com/en-us/library/gg750724.aspx Õâ¸öWRKÒ²ÓĞµÄ¡£
+//æ‘˜è‡ªï¼šhttp://msdn.microsoft.com/en-us/library/gg750724.aspx è¿™ä¸ªWRKä¹Ÿæœ‰çš„ã€‚
 typedef struct {
     LARGE_INTEGER KernelTime;
     LARGE_INTEGER UserTime;
@@ -54,8 +54,8 @@ typedef struct {
 } SYSTEM_THREAD_INFORMATION, * PSYSTEM_THREAD_INFORMATION;
 
 
-//Õª×Ô£ºhttp://doxygen.reactos.org/de/d22/ndk_2extypes_8h_source.html£¬ÓĞĞŞ¸Ä¡£
-//Áí¼û£ºhttps://chromium.googlesource.com/chromium/chromium/+/1a9d8d9f3355e8b9f35591c8a678940bd264f412/third_party/psutil/psutil/arch/mswindows/ntextapi.h
+//æ‘˜è‡ªï¼šhttp://doxygen.reactos.org/de/d22/ndk_2extypes_8h_source.htmlï¼Œæœ‰ä¿®æ”¹ã€‚
+//å¦è§ï¼šhttps://chromium.googlesource.com/chromium/chromium/+/1a9d8d9f3355e8b9f35591c8a678940bd264f412/third_party/psutil/psutil/arch/mswindows/ntextapi.h
 typedef struct _SYSTEM_PROCESS_INFORMATION
 {
     ULONG NextEntryOffset;
@@ -67,7 +67,7 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
     LARGE_INTEGER CreateTime;
     LARGE_INTEGER UserTime;
     LARGE_INTEGER KernelTime;
-    UNICODE_STRING ImageName;//Õâ¸öÃû×ÖºÃÏñ²»³¬¹ı15-16¸ö×Ö·û¡£
+    UNICODE_STRING ImageName;//è¿™ä¸ªåå­—å¥½åƒä¸è¶…è¿‡15-16ä¸ªå­—ç¬¦ã€‚
     KPRIORITY BasePriority;
     HANDLE UniqueProcessId;
     HANDLE InheritedFromUniqueProcessId;
@@ -101,13 +101,13 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
     LARGE_INTEGER ReadTransferCount;
     LARGE_INTEGER WriteTransferCount;
     LARGE_INTEGER OtherTransferCount;
-    SYSTEM_THREAD_INFORMATION TH[1];//Õâ¸ö±¾À´ÊÇ×¢ÊÍµôµÄ¡£
+    SYSTEM_THREAD_INFORMATION TH[1];//è¿™ä¸ªæœ¬æ¥æ˜¯æ³¨é‡Šæ‰çš„ã€‚
 } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
 
-//2008°æ±¾µÄMSDN£¬·ÇWDK¡£
+//2008ç‰ˆæœ¬çš„MSDNï¼ŒéWDKã€‚
 //http://msdn.microsoft.com/en-us/library/windows/desktop/ms687420(v=vs.85).aspx
-//ÉÏÃæµÄÒ»Ğ©±ê×¢ÔÚµÍ°æ±¾ÉÏµÄWDK³ö´í¡£
+//ä¸Šé¢çš„ä¸€äº›æ ‡æ³¨åœ¨ä½ç‰ˆæœ¬ä¸Šçš„WDKå‡ºé”™ã€‚
 NTSTATUS /* WINAPI */ ZwQueryInformationProcess(
     __in          HANDLE ProcessHandle,
     __in          PROCESSINFOCLASS ProcessInformationClass,
@@ -118,8 +118,8 @@ NTSTATUS /* WINAPI */ ZwQueryInformationProcess(
 
 
 /*
-Õª×Ô£ºhttp://msdn.microsoft.com/en-us/library/windows/desktop/ms724509(v=vs.85).aspx¡£
-ÓĞĞŞ¸Ä¡£
+æ‘˜è‡ªï¼šhttp://msdn.microsoft.com/en-us/library/windows/desktop/ms724509(v=vs.85).aspxã€‚
+æœ‰ä¿®æ”¹ã€‚
 */
 NTSTATUS /* WINAPI NtQuerySystemInformation */ ZwQuerySystemInformation(
     _In_       SYSTEM_INFORMATION_CLASS SystemInformationClass,
@@ -152,18 +152,18 @@ NTSTATUS(NTAPI *
 #define __FILENAMEW__ (wcsrchr(_CRT_WIDE(__FILE__), L'\\') ? wcsrchr(_CRT_WIDE(__FILE__), L'\\') + 1 : _CRT_WIDE(__FILE__))
 
 /*
-¼ÈÖ§³Öµ¥×Ö·ûÒ²Ö§³Ö¿í×Ö·û¡£
-×¢Òâ£º
-1.µÚÈı¸ö²ÎÊıÊÇµ¥×Ö·û£¬¿ÉÒÔÎª¿Õ£¬µ«²»ÒªÎªNULL£¬¸ü²»ÄÜÊ¡ÂÔ¡£
-2.Çı¶¯ÔÚDPCÉÏ²»Òª´òÓ¡¿í×Ö·û¡£
+æ—¢æ”¯æŒå•å­—ç¬¦ä¹Ÿæ”¯æŒå®½å­—ç¬¦ã€‚
+æ³¨æ„ï¼š
+1.ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯å•å­—ç¬¦ï¼Œå¯ä»¥ä¸ºç©ºï¼Œä½†ä¸è¦ä¸ºNULLï¼Œæ›´ä¸èƒ½çœç•¥ã€‚
+2.é©±åŠ¨åœ¨DPCä¸Šä¸è¦æ‰“å°å®½å­—ç¬¦ã€‚
 3.
 */
 
-//Õâ¸öÖ§³Ö3Èı¸ö²ÎÊı¡£
+//è¿™ä¸ªæ”¯æŒ3ä¸‰ä¸ªå‚æ•°ã€‚
 #define Print(ComponentId, Level, Format, ...) \
 {DbgPrintEx(ComponentId, Level, "FILE:%s, LINE:%d, "##Format".\r\n", __FILENAME__, __LINE__, __VA_ARGS__);}
 
-//Õâ¸ö×îÉÙ4¸ö²ÎÊı¡£
+//è¿™ä¸ªæœ€å°‘4ä¸ªå‚æ•°ã€‚
 #define PrintEx(ComponentId, Level, Format, ...) \
 {KdPrintEx((ComponentId, Level, "FILE:%s, LINE:%d, "##Format".\r\n", __FILENAME__, __LINE__, __VA_ARGS__));}
 

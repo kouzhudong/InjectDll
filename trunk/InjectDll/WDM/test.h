@@ -1,31 +1,31 @@
 /*
-���ܣ�����������APCע��һ�δ��뵽ĳ�����������С�
+功能：在驱动中用APC注入一段代码到某个进程中运行。
 
-���������Ǻܼ򵥾�һ���������磺NtQueueApcThread�������������û�е����������Զ�̬��ȡ�����һ��е�����KeInsertQueueApc֮��ĺ���ʵ�����ƵĹ��ܡ�
+做法：倒是很简单就一个函数，如：NtQueueApcThread，但是这个函数没有导出，但可以动态获取。而且还有导出的KeInsertQueueApc之类的函数实现类似的功能。
 
-���̣�Ҫ�ų�IDLE��SYSTEM��smss.exe���Ҳ�ų�������ֻ��NTDLL.DLL�ĺ��������Ǽ�������DLLҲ���Եġ�
+进程，要排除IDLE，SYSTEM。smss.exe最好也排除，除非只用NTDLL.DLL的函数，但是加载其他DLL也可以的。
 
-����X64��X64�е�WOW64��Ҫ�����Ľ�/�޸ġ�
-��Ȼ��ע��DLL����һ��ע��ɹ��ˣ��Ժ���ע��ĺ������֪���ġ�
+对于X64及X64中的WOW64需要再做改进/修改。
+既然是注入DLL，第一次注入成功了，以后再注入的后果你是知道的。
 
-�����ˣ���ʱ���л�δ֪�������Ҫ���룬������Ҫ�����ӣ�������ʮ���ӣ�����ļ���Сʱ���߼��켸ҹ��������Զ�������У��磺�����������̵߳�״̬�����ϡ�
+插入了，何时运行还未知：快的需要几秒，慢的需要及分钟，甚至几十分钟，更深的几个小时或者几天几夜，甚至永远不会运行，如：不触发或者线程的状态不符合。
 
-���Ƶİ취���У�
-1.IMAGE�ص���
+类似的办法还有：
+1.IMAGE回调。
 2.KernelCallbackTable = apfnDispatch
-3.�Լ��ֶ������̣߳�Ҫ����X86��X64/WOW64�ȡ�
+3.自己手动创建线程，要考虑X86，X64/WOW64等。
 
-APCӦ����һ������ȡ���Ĺ��ܣ���Ϊ��
-1.���ò��У�QueueUserAPC��
-2.�ں˵�DPC�������ǹ����ˣ��磺KeInitializeDpc/KeInsertQueueDpc/KeRemoveQueueDpc��
+APC应该是一个不会取消的功能，因为：
+1.引用层有：QueueUserAPC。
+2.内核的DPC函数倒是公开了，如：KeInitializeDpc/KeInsertQueueDpc/KeRemoveQueueDpc。
 
-�����ǲ��Դ��룬���ܾ����淶��ȥд�����ǻ���һЩBUG����ж�صȡ�
+本文是测试代码，尽管尽量规范的去写，但是还有一些BUG，如卸载等。
 
-�ο���
+参考：
 1.WRK
 2.http://www.microsoft.com/msj/0799/nerd/nerd0799.aspx
 3.http://www.rohitab.com/discuss/topic/40737-inject-dll-from-kernel-mode/
-����һ�ݶ����ģ�д��Ҳ������
+还有一份俄国的，写的也不错。
 
 made by correy
 made at 2015.12.25
@@ -42,11 +42,11 @@ int (NTAPI * MessageBoxT)(
     UINT uType
     );
 
-#pragma warning(disable:4700)//ʹ����δ��ʼ���ľֲ�������UserRoutine��
+#pragma warning(disable:4700)//使用了未初始化的局部变量“UserRoutine”
 
 
 /*
-ժ�ԣ�http://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx
+摘自：http://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx
 */
 typedef struct _LDR_DATA_TABLE_ENTRY {
     PVOID Reserved1[2];
@@ -67,9 +67,9 @@ typedef struct _LDR_DATA_TABLE_ENTRY {
 
 
 /*
-ժ�ԣ�\wrk\WindowsResearchKernel-WRK\WRK-v1.2\base\ntos\inc\ps.h
-�˺�����XP 32�Ͼ��Ѿ�������Ӧ�ÿ��Է���ʹ�á�
-����ZwQueryInformationProcess �� ProcessBasicInformation.
+摘自：\wrk\WindowsResearchKernel-WRK\WRK-v1.2\base\ntos\inc\ps.h
+此函数在XP 32上就已经导出，应该可以放心使用。
+或者ZwQueryInformationProcess 的 ProcessBasicInformation.
 */
 NTKERNELAPI
 PPEB
@@ -79,7 +79,7 @@ PsGetProcessPeb(
 
 
 
-//ժ�ԣ�http://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx
+//摘自：http://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx
 typedef struct _PEB_LDR_DATA {
     BYTE       Reserved1[8];
     PVOID      Reserved2[3];
@@ -96,7 +96,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 } RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
 
 
-//ժ�ԣ�Winternl.h��
+//摘自：Winternl.h。
 typedef
 VOID
 (NTAPI * PPS_POST_PROCESS_INIT_ROUTINE) (
@@ -120,7 +120,7 @@ typedef struct _PEB {
     ULONG                         SessionId;
 } PEB, * PPEB;
 #endif
-//���µĽṹ���壬ժ�ԣ�http://msdn.microsoft.com/en-us/library/windows/desktop/aa813706(v=vs.85).aspx
+//上下的结构定义，摘自：http://msdn.microsoft.com/en-us/library/windows/desktop/aa813706(v=vs.85).aspx
 #if defined(_WIN64)
 typedef struct _PEB {
     BYTE Reserved1[2];

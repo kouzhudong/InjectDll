@@ -12,8 +12,8 @@ ZwQueryVirtualMemory_PFN ZwQueryVirtualMemoryFn;
 ZwCreateThreadExFn ZwCreateThreadEx;
 
 
-//#define CopyCode       //¸´ÖÆ´úÂëµÄ·½Ê½¡£
-#define UseUserFun   //Ö±½ÓÓÃÓÃ»§´ÓµÄAPI·½Ê½£¨LoadLibraryExW£©¡£
+//#define CopyCode       //å¤åˆ¶ä»£ç çš„æ–¹å¼ã€‚
+#define UseUserFun   //ç›´æŽ¥ç”¨ç”¨æˆ·ä»Žçš„APIæ–¹å¼ï¼ˆLoadLibraryExWï¼‰ã€‚
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ ZwCreateThreadExFn ZwCreateThreadEx;
 
 BOOL IsExcludeProcess(PCLIENT_ID ClientId)
 /*
-ÅÅ³ý²»ÐèÒª×¢ÈëµÄ½ø³Ì¡£
+æŽ’é™¤ä¸éœ€è¦æ³¨å…¥çš„è¿›ç¨‹ã€‚
 */
 {
     if (ClientId->UniqueProcess == 0 || PsGetProcessId(PsInitialSystemProcess) == ClientId->UniqueProcess) {
@@ -29,7 +29,7 @@ BOOL IsExcludeProcess(PCLIENT_ID ClientId)
     }
 
     /*
-    »ñÈ¡ÄÚºË¾ä±ú¡£
+    èŽ·å–å†…æ ¸å¥æŸ„ã€‚
     */
     PEPROCESS  Process = 0;
     NTSTATUS status = PsLookupProcessByProcessId(ClientId->UniqueProcess, &Process);
@@ -37,7 +37,7 @@ BOOL IsExcludeProcess(PCLIENT_ID ClientId)
         Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "0x%#x", status);
         return TRUE;
     }
-    ObDereferenceObject(Process); //Î¢Èí½¨Òé¼ÓÉÏ¡£
+    ObDereferenceObject(Process); //å¾®è½¯å»ºè®®åŠ ä¸Šã€‚
     HANDLE  KernelProcessHandle = NULL;
     status = ObOpenObjectByPointer(Process,
                                    OBJ_KERNEL_HANDLE,
@@ -89,19 +89,19 @@ BOOL IsExcludeProcess(PCLIENT_ID ClientId)
 
 void ApcCallback(PVOID NormalContext, PVOID SystemArgument1, PVOID SystemArgument2)
 /*
-Òª¸´ÖÆ¸øÓÃ»§Ì¬µÄ´úÂë¡£
+è¦å¤åˆ¶ç»™ç”¨æˆ·æ€çš„ä»£ç ã€‚
 
-½¨ÒéÕâÀïÊÍ·ÅÇý¶¯ÖÐÉêÇëµÄÓÃ»§Ì¬ÄÚ´æ¡£
+å»ºè®®è¿™é‡Œé‡Šæ”¾é©±åŠ¨ä¸­ç”³è¯·çš„ç”¨æˆ·æ€å†…å­˜ã€‚
 
-Èç¹û£º±àÒëÆ÷²»Ö§³Ö/guard (Enable Control Flow Guard)¡£
-Õâ¸öº¯ÊýÔËÐÐÃ»ÎÊÌâ¡£
-Èç¹û±àÒëÆ÷Ö§³Ö/guard£¬Ò»¶¨Òªuse /guard:cf-.
-·ñÔò£¬Õâ¸öº¯ÊýÀïµÄº¯Êýµ÷ÓÃ»á±ä³É£¨IDA²é¿´£©£ºcall    cs:__guard_dispatch_icall_fptr
-Õâ¸ö¾­µ÷ÊÔ¸ú×ÙÊÇÒ»¸öÎÞÐ§µÄÄÚ´æ¡£
-Èç¹û¹Ø±Õºó£¬»á±äÎª£¨IDA²é¿´£©£ºcall    qword ptr [rax+XXh]
-Õâ²ÅÊÇ·ûºÏÐèÇóµÄ¡£
+å¦‚æžœï¼šç¼–è¯‘å™¨ä¸æ”¯æŒ/guard (Enable Control Flow Guard)ã€‚
+è¿™ä¸ªå‡½æ•°è¿è¡Œæ²¡é—®é¢˜ã€‚
+å¦‚æžœç¼–è¯‘å™¨æ”¯æŒ/guardï¼Œä¸€å®šè¦use /guard:cf-.
+å¦åˆ™ï¼Œè¿™ä¸ªå‡½æ•°é‡Œçš„å‡½æ•°è°ƒç”¨ä¼šå˜æˆï¼ˆIDAæŸ¥çœ‹ï¼‰ï¼šcall    cs:__guard_dispatch_icall_fptr
+è¿™ä¸ªç»è°ƒè¯•è·Ÿè¸ªæ˜¯ä¸€ä¸ªæ— æ•ˆçš„å†…å­˜ã€‚
+å¦‚æžœå…³é—­åŽï¼Œä¼šå˜ä¸ºï¼ˆIDAæŸ¥çœ‹ï¼‰ï¼šcall    qword ptr [rax+XXh]
+è¿™æ‰æ˜¯ç¬¦åˆéœ€æ±‚çš„ã€‚
 
-×¢Òâ£ºÕâ¸öº¯ÊýÒªÖ§³ÖX86£¬X64ºÍWOW64.
+æ³¨æ„ï¼šè¿™ä¸ªå‡½æ•°è¦æ”¯æŒX86ï¼ŒX64å’ŒWOW64.
 */
 {
     PPassToUser pa2 = (PPassToUser)SystemArgument2;
@@ -120,10 +120,10 @@ void ApcCallbackEnd()
 
 VOID InitialUserRoutine(PCLIENT_ID ClientId, PSIZE_T UserApcCallbackAddr)
 /*
-ÉêÇëÓÃ»§Ì¬µÄÄÚ´æ£¬²¢°Ñ´úÂë¸´ÖÆ¹ýÈ¥¡£
+ç”³è¯·ç”¨æˆ·æ€çš„å†…å­˜ï¼Œå¹¶æŠŠä»£ç å¤åˆ¶è¿‡åŽ»ã€‚
 
-ÓÐÊ±ÔÚÏë£¬ÓÃ»§²ãµÄÄÚ´æÒ²²»ÓÃÉêÇë£¬
-ÕÒÒ»Æ¬Ó¦ÓÃ²ã²»ÓÃµÄÇÒ¿ÉÐ´µÄÄÚ´æ£¬Ö±½ÓÐ´¹ýÈ¥£¬²¢¼Ç×¡Õâ¸öÄÚ´æ£¬ÈÃºóµ±²ÎÊý´«µÝ¹ýÈ¥¼´¿É¡£
+æœ‰æ—¶åœ¨æƒ³ï¼Œç”¨æˆ·å±‚çš„å†…å­˜ä¹Ÿä¸ç”¨ç”³è¯·ï¼Œ
+æ‰¾ä¸€ç‰‡åº”ç”¨å±‚ä¸ç”¨çš„ä¸”å¯å†™çš„å†…å­˜ï¼Œç›´æŽ¥å†™è¿‡åŽ»ï¼Œå¹¶è®°ä½è¿™ä¸ªå†…å­˜ï¼Œè®©åŽå½“å‚æ•°ä¼ é€’è¿‡åŽ»å³å¯ã€‚
 */
 {
     PEPROCESS    Process;
@@ -150,7 +150,7 @@ VOID InitialUserRoutine(PCLIENT_ID ClientId, PSIZE_T UserApcCallbackAddr)
 
     SIZE_T CodeSize = Size;
 
-    PVOID BaseAddress = 0;//±ØÐëÖÆ¶¨Îª0£¬·ñÔò·µ»Ø²ÎÊý´íÎó¡£ 
+    PVOID BaseAddress = 0;//å¿…é¡»åˆ¶å®šä¸º0ï¼Œå¦åˆ™è¿”å›žå‚æ•°é”™è¯¯ã€‚ 
     status = ZwAllocateVirtualMemory(Handle  /*NtCurrentProcess()*/,
                                      &BaseAddress,
                                      0,
@@ -184,8 +184,8 @@ VOID InitialUserRoutine(PCLIENT_ID ClientId, PSIZE_T UserApcCallbackAddr)
 VOID InitialUserArgument(HANDLE UniqueProcess, PSIZE_T UserArgument)
 /*
 
-×¢ÊÍ£º
-smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
+æ³¨é‡Šï¼š
+smss.exeåªæœ‰ntll.dllå’Œè‡ªèº«ï¼Œæ²¡æœ‰kernel32.dllï¼Œè¿™æ˜¯ä¸ªnativeç¨‹åºã€‚
 */
 {
     PEPROCESS    Process;
@@ -205,7 +205,7 @@ smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
     SIZE_T Size = sizeof(PassToUser);
     SIZE_T CodeSize = Size;
 
-    PVOID BaseAddress = 0;//±ØÐëÖÆ¶¨Îª0£¬·ñÔò·µ»Ø²ÎÊý´íÎó¡£  
+    PVOID BaseAddress = 0;//å¿…é¡»åˆ¶å®šä¸º0ï¼Œå¦åˆ™è¿”å›žå‚æ•°é”™è¯¯ã€‚  
     status = ZwAllocateVirtualMemory(Handle, &BaseAddress, 0, &Size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     if (!NT_SUCCESS(status)) {
         Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x", status);
@@ -215,15 +215,15 @@ smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
     }
 
     KAPC_STATE   ApcState;
-    KeStackAttachProcess(Process, &ApcState); //¸½¼Óµ±Ç°Ïß³Ìµ½Ä¿±ê½ø³Ì¿Õ¼äÄÚ   
+    KeStackAttachProcess(Process, &ApcState); //é™„åŠ å½“å‰çº¿ç¨‹åˆ°ç›®æ ‡è¿›ç¨‹ç©ºé—´å†…   
 
-    __try {//×¢Òâ£º´¦Àí¹ý³ÌÖÐ£¬½ø³Ì¿ÉÄÜ»áÍË³ö¡£
+    __try {//æ³¨æ„ï¼šå¤„ç†è¿‡ç¨‹ä¸­ï¼Œè¿›ç¨‹å¯èƒ½ä¼šé€€å‡ºã€‚
         RtlZeroMemory(BaseAddress, CodeSize);
         PPassToUser pUserData = (PPassToUser)BaseAddress;
         pUserData->RegionSize = Size;
 
-        PPEB ppeb = PsGetProcessPeb(Process);//×¢Òâ£ºIDLEºÍsystemÕâÁ½¸öÓ¦¸Ã»ñÈ¡²»µ½¡£
-        if (ppeb && ppeb->Ldr) {//½ø³ÌÆô¶¯Ê±£¬LdrÎª¿Õ¡£
+        PPEB ppeb = PsGetProcessPeb(Process);//æ³¨æ„ï¼šIDLEå’Œsystemè¿™ä¸¤ä¸ªåº”è¯¥èŽ·å–ä¸åˆ°ã€‚
+        if (ppeb && ppeb->Ldr) {//è¿›ç¨‹å¯åŠ¨æ—¶ï¼ŒLdrä¸ºç©ºã€‚
             PLDR_DATA_TABLE_ENTRY pldte;
             UNICODE_STRING ntdll = RTL_CONSTANT_STRING(L"ntdll.dll");
             UNICODE_STRING kernel32 = RTL_CONSTANT_STRING(L"kernel32.dll");
@@ -234,10 +234,10 @@ smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
 
             do {
                 pldte = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(le1, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-                if (pldte->FullDllName.Length) //¹ýÂËµô×îºóÒ»¸ö£¬¶àÓàµÄ¡£
+                if (pldte->FullDllName.Length) //è¿‡æ»¤æŽ‰æœ€åŽä¸€ä¸ªï¼Œå¤šä½™çš„ã€‚
                 {
                     //KdPrint(("FullDllName:%wZ \n", &pldte->FullDllName));
-                    //"C:\WINDOWS\system32\USER32.dll"£¬ÒòÎªÕâÀïÊÇÍêÕûÂ·¾¶£¬ÁíÒ»¸öË¼Â·ÊÇ»ñÈ¡ÏµÍ³Â·¾¶ÔÙ×éºÏ¡£
+                    //"C:\WINDOWS\system32\USER32.dll"ï¼Œå› ä¸ºè¿™é‡Œæ˜¯å®Œæ•´è·¯å¾„ï¼Œå¦ä¸€ä¸ªæ€è·¯æ˜¯èŽ·å–ç³»ç»Ÿè·¯å¾„å†ç»„åˆã€‚
 
                     PUNICODE_STRING pus = (PUNICODE_STRING)&pldte->Reserved4;
                     //if (RtlCompareUnicodeString(&pldte->FullDllName, &user32, TRUE) == 0)
@@ -278,7 +278,7 @@ smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
         Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "ExceptionCode:%#X", GetExceptionCode());
     }
 
-    KeUnstackDetachProcess(&ApcState);//½â³ý¸½¼Ó
+    KeUnstackDetachProcess(&ApcState);//è§£é™¤é™„åŠ 
 
     *UserArgument = (SIZE_T)BaseAddress;
 
@@ -289,9 +289,9 @@ smss.exeÖ»ÓÐntll.dllºÍ×ÔÉí£¬Ã»ÓÐkernel32.dll£¬ÕâÊÇ¸önative³ÌÐò¡£
 
 NTSTATUS QueueApcThread(PCLIENT_ID ClientId)
 /*
-64Î»ÏÂÒª´¦ÀíWOW64½ø³Ì¡£
+64ä½ä¸‹è¦å¤„ç†WOW64è¿›ç¨‹ã€‚
 
-ÔÚwin8ÏÂÒª¹Ø±ÕSMEP¡£
+åœ¨win8ä¸‹è¦å…³é—­SMEPã€‚
 */
 {
     if (IsExcludeProcess(ClientId)) {
@@ -335,15 +335,15 @@ NTSTATUS QueueApcThread(PCLIENT_ID ClientId)
 
 PVOID GetLoadLibraryExWAddress(HANDLE UniqueProcess)
 /*
-¹¦ÄÜ£º»ñÈ¡LoadLibraryExWµÄµØÖ·¡£
+åŠŸèƒ½ï¼šèŽ·å–LoadLibraryExWçš„åœ°å€ã€‚
 
-×¢Òâ£ºÖ§³ÖX64£¬X86£¬ÒÔ¼°WOW64(\Windows\SysWOW64\kernel32.dll).
+æ³¨æ„ï¼šæ”¯æŒX64ï¼ŒX86ï¼Œä»¥åŠWOW64(\Windows\SysWOW64\kernel32.dll).
 
-Äã·¢ÏÖÃ»£¿APCµÄÓÃ»§Ì¬»Øµ÷º¯ÊýºÍLoadLibraryExµÄ²ÎÊý¸öÊýÒ»Ñù£¬¶¼ÊÇÈý¸ö¡£
-ËùÒÔ°ÑAPCµÄÓÃ»§Ì¬»Øµ÷º¯ÊýÖ±½ÓÉèÖÃÎªLoadLibraryExA/W²»ÊÇ¸üºÃÂð£¿
-ÕâÑù£¬Ò²²»ÓÃshellcode,¸ü²»ÓÃ×Ô¼ºÔÚÇý¶¯ÉêÇëÄÚ´æÔÙ¸´ÖÆ´úÂë£¨»òÕßshellcode£©ÁË¡£
-×¢Òâº¯ÊýµÄ²ÎÊýµÄµ÷ÓÃ·½Ê½¡£
-µ«£¬ÕâÑù×öÓÐÒ»¸öÈ±µã£¬ÎÞ·¨½øÐÐ±ðµÄ²Ù×÷£¬Èç£ºÊÍ·ÅÄÚ´æ¡£
+ä½ å‘çŽ°æ²¡ï¼ŸAPCçš„ç”¨æˆ·æ€å›žè°ƒå‡½æ•°å’ŒLoadLibraryExçš„å‚æ•°ä¸ªæ•°ä¸€æ ·ï¼Œéƒ½æ˜¯ä¸‰ä¸ªã€‚
+æ‰€ä»¥æŠŠAPCçš„ç”¨æˆ·æ€å›žè°ƒå‡½æ•°ç›´æŽ¥è®¾ç½®ä¸ºLoadLibraryExA/Wä¸æ˜¯æ›´å¥½å—ï¼Ÿ
+è¿™æ ·ï¼Œä¹Ÿä¸ç”¨shellcode,æ›´ä¸ç”¨è‡ªå·±åœ¨é©±åŠ¨ç”³è¯·å†…å­˜å†å¤åˆ¶ä»£ç ï¼ˆæˆ–è€…shellcodeï¼‰äº†ã€‚
+æ³¨æ„å‡½æ•°çš„å‚æ•°çš„è°ƒç”¨æ–¹å¼ã€‚
+ä½†ï¼Œè¿™æ ·åšæœ‰ä¸€ä¸ªç¼ºç‚¹ï¼Œæ— æ³•è¿›è¡Œåˆ«çš„æ“ä½œï¼Œå¦‚ï¼šé‡Šæ”¾å†…å­˜ã€‚
 */
 {
     PVOID LoadLibraryExWAddress = NULL;
@@ -355,9 +355,9 @@ PVOID GetLoadLibraryExWAddress(HANDLE UniqueProcess)
     KAPC_STATE   ApcState;
     KeStackAttachProcess(Process, &ApcState);
 
-    __try {//×¢Òâ£º´¦Àí¹ý³ÌÖÐ£¬½ø³Ì¿ÉÄÜ»áÍË³ö¡£
-        PPEB ppeb = PsGetProcessPeb(Process);//×¢Òâ£ºIDLEºÍsystemÕâÁ½¸öÓ¦¸Ã»ñÈ¡²»µ½¡£
-        if (ppeb && ppeb->Ldr) {//½ø³ÌÆô¶¯Ê±£¬LdrÎª¿Õ¡£
+    __try {//æ³¨æ„ï¼šå¤„ç†è¿‡ç¨‹ä¸­ï¼Œè¿›ç¨‹å¯èƒ½ä¼šé€€å‡ºã€‚
+        PPEB ppeb = PsGetProcessPeb(Process);//æ³¨æ„ï¼šIDLEå’Œsystemè¿™ä¸¤ä¸ªåº”è¯¥èŽ·å–ä¸åˆ°ã€‚
+        if (ppeb && ppeb->Ldr) {//è¿›ç¨‹å¯åŠ¨æ—¶ï¼ŒLdrä¸ºç©ºã€‚
             PLDR_DATA_TABLE_ENTRY pldte;
             UNICODE_STRING kernel32 = RTL_CONSTANT_STRING(L"kernel32.dll");
 
@@ -366,10 +366,10 @@ PVOID GetLoadLibraryExWAddress(HANDLE UniqueProcess)
 
             do {
                 pldte = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(le1, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
-                if (pldte->FullDllName.Length) //¹ýÂËµô×îºóÒ»¸ö£¬¶àÓàµÄ¡£
+                if (pldte->FullDllName.Length) //è¿‡æ»¤æŽ‰æœ€åŽä¸€ä¸ªï¼Œå¤šä½™çš„ã€‚
                 {
                     //KdPrint(("FullDllName:%wZ \n", &pldte->FullDllName));
-                    //"C:\WINDOWS\system32\USER32.dll"£¬ÒòÎªÕâÀïÊÇÍêÕûÂ·¾¶£¬ÁíÒ»¸öË¼Â·ÊÇ»ñÈ¡ÏµÍ³Â·¾¶ÔÙ×éºÏ¡£
+                    //"C:\WINDOWS\system32\USER32.dll"ï¼Œå› ä¸ºè¿™é‡Œæ˜¯å®Œæ•´è·¯å¾„ï¼Œå¦ä¸€ä¸ªæ€è·¯æ˜¯èŽ·å–ç³»ç»Ÿè·¯å¾„å†ç»„åˆã€‚
 
                     PUNICODE_STRING pus = (PUNICODE_STRING)&pldte->Reserved4;
                     //if (RtlCompareUnicodeString(&pldte->FullDllName, &user32, TRUE) == 0)
@@ -401,8 +401,8 @@ PVOID GetLoadLibraryExWAddress(HANDLE UniqueProcess)
         }
 
     #if defined(_WIN64)
-        //Èç¹ûÊÇWOW64½ø³ÌÐèÒªÖ´ÐÐÏÂÃæµÄ´úÂë£¬ËùÒÔÒªÌí¼ÓÅÐ¶ÏWOW64µÄ´úÂë¡£
-        //ZwQueryInformationProcess +¡¡ProcessWow64Information
+        //å¦‚æžœæ˜¯WOW64è¿›ç¨‹éœ€è¦æ‰§è¡Œä¸‹é¢çš„ä»£ç ï¼Œæ‰€ä»¥è¦æ·»åŠ åˆ¤æ–­WOW64çš„ä»£ç ã€‚
+        //ZwQueryInformationProcess +ã€€ProcessWow64Information
         //PWOW64_PROCESS pwp = (PWOW64_PROCESS)PsGetProcessWow64Process(Process);
         //if (NULL != pwp) {
         //    EnumWow64Module(pwp, CallBack, Context);
@@ -422,14 +422,14 @@ PVOID GetLoadLibraryExWAddress(HANDLE UniqueProcess)
 
 PVOID SetDllFullPath(HANDLE UniqueProcess)
 /*
-¹¦ÄÜ£ºÔÙÄ¿±ê½ø³ÌÖÐÉêÇëÒ»¿éÄÚ´æÓÃ»§´æ´¢DLLµÄÂ·¾¶¡£
+åŠŸèƒ½ï¼šå†ç›®æ ‡è¿›ç¨‹ä¸­ç”³è¯·ä¸€å—å†…å­˜ç”¨æˆ·å­˜å‚¨DLLçš„è·¯å¾„ã€‚
 
-×¢Òâ£ºÖ§³ÖX64£¬X86£¬ÒÔ¼°WOW64.
+æ³¨æ„ï¼šæ”¯æŒX64ï¼ŒX86ï¼Œä»¥åŠWOW64.
 */
 {
     PEPROCESS Process = NULL;
     HANDLE  Handle = 0;
-    PVOID DllFullPath = NULL;//±ØÐëÖÆ¶¨Îª0£¬·ñÔò·µ»Ø²ÎÊý´íÎó¡£ 
+    PVOID DllFullPath = NULL;//å¿…é¡»åˆ¶å®šä¸º0ï¼Œå¦åˆ™è¿”å›žå‚æ•°é”™è¯¯ã€‚ 
 
     __try {
         NTSTATUS status = PsLookupProcessByProcessId(UniqueProcess, &Process);
@@ -456,7 +456,7 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
         }
 
         status = ZwAllocateVirtualMemory(Handle, &DllFullPath, 0, &Size, MEM_COMMIT, PAGE_READWRITE);
-        if (!NT_SUCCESS(status)) {//Èç¹ûÊÇPAGE_EXECUTE_READWRITE»á³öÏÖSTATUS_DYNAMIC_CODE_BLOCKED.
+        if (!NT_SUCCESS(status)) {//å¦‚æžœæ˜¯PAGE_EXECUTE_READWRITEä¼šå‡ºçŽ°STATUS_DYNAMIC_CODE_BLOCKED.
             Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "status:%#x, pid:%d, Size:%lld",
                   status, HandleToULong(UniqueProcess), (long long)Size);
             __leave;
@@ -475,7 +475,7 @@ PVOID SetDllFullPath(HANDLE UniqueProcess)
             Print(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, "ExceptionCode:%#X", GetExceptionCode());
         }
 
-        KeUnstackDetachProcess(&ApcState);//½â³ý¸½¼Ó
+        KeUnstackDetachProcess(&ApcState);//è§£é™¤é™„åŠ 
     } __finally {
         if (Process) {
             ObDereferenceObject(Process);
@@ -497,9 +497,9 @@ NTSTATUS NTAPI ZwQueueApcThreadEx(__in HANDLE ThreadHandle,
                                   __in_opt PVOID ApcArgument3
 )
 /*
-¶ÔNtQueueApcThreadµÄ·â×°¡£
+å¯¹NtQueueApcThreadçš„å°è£…ã€‚
 
-µÚÒ»¸ö²ÎÊý£¬ÊÇÓÃ»§Ì¬µÄ¾ä±ú£¬ÆäÊµÊÇtid.
+ç¬¬ä¸€ä¸ªå‚æ•°ï¼Œæ˜¯ç”¨æˆ·æ€çš„å¥æŸ„ï¼Œå…¶å®žæ˜¯tid.
 */
 {
     PETHREAD Thread;
@@ -535,9 +535,9 @@ NTSTATUS NTAPI ZwQueueApcThreadEx(__in HANDLE ThreadHandle,
 
 NTSTATUS QueueApcThread(PCLIENT_ID ClientId)
 /*
-64Î»ÏÂÒª´¦ÀíWOW64½ø³Ì¡£
+64ä½ä¸‹è¦å¤„ç†WOW64è¿›ç¨‹ã€‚
 
-ÔÚwin8ÏÂÒª¹Ø±ÕSMEP¡£
+åœ¨win8ä¸‹è¦å…³é—­SMEPã€‚
 */
 {
     //if (IsExcludeProcess(ClientId)) {
@@ -573,7 +573,7 @@ NTSTATUS QueueApcThread(PCLIENT_ID ClientId)
               Status, HandleToULong(ClientId->UniqueProcess), HandleToULong(ClientId->UniqueThread));
     }
 
-    if (g_ZwQueueApcThread) {//ÓÅÏÈÊ¹ÓÃÏµÍ³µÄ¡£
+    if (g_ZwQueueApcThread) {//ä¼˜å…ˆä½¿ç”¨ç³»ç»Ÿçš„ã€‚
         Status = ZwQueueApcThreadEx(ClientId->UniqueThread, UserRoutine, Argument, NULL, NULL);
     } else {
         Status = NtQueueApcThreadEx(ClientId->UniqueThread, UserRoutine, Argument, NULL, NULL);        

@@ -50,7 +50,7 @@ KeInitializeApc(
 
 typedef
 PLIST_ENTRY
-(*KeFlushQueueApcT) (//XP Î´µ¼³ö¡£
+(*KeFlushQueueApcT) (//XP æœªå¯¼å‡ºã€‚
                      __inout PKTHREAD Thread,
                      __in KPROCESSOR_MODE ProcessorMode
                      );
@@ -66,7 +66,7 @@ KeInsertQueueApc(
 
 typedef
 BOOLEAN
-(*KeRemoveQueueApcT) (//XP Î´µ¼³ö¡£
+(*KeRemoveQueueApcT) (//XP æœªå¯¼å‡ºã€‚
                       __inout PKAPC Apc
                       );
 
@@ -78,7 +78,7 @@ typedef
 NTSYSAPI
 NTSTATUS
 (NTAPI *
- ZwTestAlertT) (//XP ÄÚºËÃ»ÓĞµ¼³ö¡£
+ ZwTestAlertT) (//XP å†…æ ¸æ²¡æœ‰å¯¼å‡ºã€‚
                 VOID
                 );
 
@@ -86,7 +86,7 @@ NTSTATUS
 NTSYSAPI
 NTSTATUS
 NTAPI
-ZwAlertThread(//XP ÄÚºËµ¼³ö¡£
+ZwAlertThread(//XP å†…æ ¸å¯¼å‡ºã€‚
               __in HANDLE ThreadHandle
 );
 
@@ -94,7 +94,7 @@ typedef
 NTSYSAPI
 NTSTATUS
 (NTAPI *
- ZwSuspendThreadT) (//XP ÄÚºËÃ»ÓĞµ¼³ö
+ ZwSuspendThreadT) (//XP å†…æ ¸æ²¡æœ‰å¯¼å‡º
                     __in HANDLE ThreadHandle,
                     __out_opt PULONG PreviousSuspendCount
                     );
@@ -103,7 +103,7 @@ typedef
 NTSYSAPI
 NTSTATUS
 (NTAPI *
- ZwResumeThreadT) (//XP ÄÚºËÃ»ÓĞµ¼³ö
+ ZwResumeThreadT) (//XP å†…æ ¸æ²¡æœ‰å¯¼å‡º
                    __in HANDLE ThreadHandle,
                    __out_opt PULONG PreviousSuspendCount
                    );
@@ -112,7 +112,7 @@ typedef
 NTSYSAPI
 NTSTATUS
 (NTAPI *
- ZwAlertResumeThreadT) (//XP ÄÚºËÃ»ÓĞµ¼³ö
+ ZwAlertResumeThreadT) (//XP å†…æ ¸æ²¡æœ‰å¯¼å‡º
                         __in HANDLE ThreadHandle,
                         __out_opt PULONG PreviousSuspendCount
                         );
@@ -138,8 +138,8 @@ extern ZwCreateThreadExFn ZwCreateThreadEx;
 EXTERN_C BOOL NTAPI PsIsProtectedProcess(PEPROCESS Process);
 EXTERN_C BOOL NTAPI PsIsProtectedProcessLight(PEPROCESS Process);
 EXTERN_C BOOL NTAPI PsIsSystemProcess(PEPROCESS Process);
-EXTERN_C PVOID /*EWOW64PROCESS*/ NTAPI PsGetProcessWow64Process(PEPROCESS Process);//·µ»ØÖµ·ÇNULL¼´ÎªWow64Process¡£
-EXTERN_C PUCHAR PsGetProcessImageFileName(PEPROCESS Process); //Î´¹«¿ªµÄº¯Êı¡£
+EXTERN_C PVOID /*EWOW64PROCESS*/ NTAPI PsGetProcessWow64Process(PEPROCESS Process);//è¿”å›å€¼éNULLå³ä¸ºWow64Processã€‚
+EXTERN_C PUCHAR PsGetProcessImageFileName(PEPROCESS Process); //æœªå…¬å¼€çš„å‡½æ•°ã€‚
 
 NTSTATUS QueueApcThread(PCLIENT_ID ClientId);
 PVOID SetDllFullPath(HANDLE UniqueProcess);

@@ -10,15 +10,15 @@ UNICODE_STRING g_DosKernel32Path = {0};
 UNICODE_STRING g_NtkernelWow64Path = {0};
 UNICODE_STRING g_DosKernelWow64Path = {0};
 
-SIZE_T LoadLibraryExWFn;//ĳ�������е�L"\\SystemRoot\\System32\\kernel32.dll"���LoadLibraryExW��ַ��
+SIZE_T LoadLibraryExWFn;//某个进程中的L"\\SystemRoot\\System32\\kernel32.dll"里的LoadLibraryExW地址。
 //#ifdef _WIN64
-SIZE_T LoadLibraryExWWow64Fn;//ĳ��WOW64�����е�L"\\SystemRoot\\SysWOW64\\kernel32.dll"���LoadLibraryExW��ַ��
+SIZE_T LoadLibraryExWWow64Fn;//某个WOW64进程中的L"\\SystemRoot\\SysWOW64\\kernel32.dll"里的LoadLibraryExW地址。
 //#endif
 
 
-SIZE_T LoadLibraryWFn;//ĳ�������е�L"\\SystemRoot\\System32\\kernel32.dll"���LoadLibraryW��ַ��
+SIZE_T LoadLibraryWFn;//某个进程中的L"\\SystemRoot\\System32\\kernel32.dll"里的LoadLibraryW地址。
 //#ifdef _WIN64
-SIZE_T LoadLibraryWWow64Fn;//ĳ��WOW64�����е�L"\\SystemRoot\\SysWOW64\\kernel32.dll"���LoadLibraryW��ַ��
+SIZE_T LoadLibraryWWow64Fn;//某个WOW64进程中的L"\\SystemRoot\\SysWOW64\\kernel32.dll"里的LoadLibraryW地址。
 //#endif
 
 
@@ -39,11 +39,11 @@ void GetKernel32FullPath()
 
 BOOL IsLoadKernel32(HANDLE UniqueProcess)
 /*
-���ܣ��ж�һ�����̣�����WOW64)�Ƿ����kernel32.dll��
+功能：判断一个进程（包括WOW64)是否加载kernel32.dll。
 
-��׼�İ취����һ�������������ڽ��̻ص���IMAGE�ص�����ͳ�ơ�
+标准的办法是用一个进程上下文在进程回调和IMAGE回调里做统计。
 
-������һ���򵥵İ취��������ȡLoadLibraryEx�ĵ�һ��ָ��ĵ�һ���ֽڣ�����������쳣��
+这里用一个简单的办法，即：读取LoadLibraryEx的第一个指令的第一个字节，看看会否发生异常。
 */
 {
     PPS_APC_ROUTINE UserRoutine = (PPS_APC_ROUTINE)LoadLibraryExWFn;
@@ -103,19 +103,19 @@ BOOL IsLoadKernel32(HANDLE UniqueProcess)
 
 PVOID GetLoadLibraryExWAddressByPid(HANDLE UniqueProcess)
 /*
-���ܣ���ȡһ�����̵�LoadLibraryExW�����ĵ�ַ��
+功能：获取一个进程的LoadLibraryExW函数的地址。
 
-����������ڵ��ļ��ǣ�
+这个函数所在的文件是：
 L"\\SystemRoot\\System32\\kernel32.dll"
 L"\\SystemRoot\\SysWOW64\\kernel32.dll"
 */
 {
     PVOID UserRoutine = NULL;
 
-    //����һ�Ĳ��ԡ�
+    //方法一的测试。
     //UserRoutine = GetUserFunctionAddress(UniqueProcess, g_Ntkernel32Path.Buffer, "LoadLibraryExW");
     //if (!UserRoutine) {
-    //#ifdef _WIN64 //Ϊ�����API��ʱ��Ϊ�˼ӿ��ٶȣ�����ж��ǲ���WOW64����.
+    //#ifdef _WIN64 //为了这个API费时，为了加快速度，最好判断是不是WOW64进程.
     //    UserRoutine = GetUserFunctionAddress(UniqueProcess, g_NtkernelWow64Path.Buffer, "LoadLibraryExW");
     //    if (UserRoutine) {
     //        LoadLibraryExWWow64Fn = (SIZE_T)UserRoutine;
@@ -143,10 +143,10 @@ L"\\SystemRoot\\SysWOW64\\kernel32.dll"
         }
     }
 
-    //�������Ĳ��ԣ���֧��WOW64��
+    //方法二的测试：不支持WOW64。
     //UserRoutine = GetUserFunctionAddressByPeb(UniqueProcess, g_DosKernel32Path.Buffer, "LoadLibraryExW");
     //if (!UserRoutine) {
-    //#ifdef _WIN64 //Ϊ�����API��ʱ��Ϊ�˼ӿ��ٶȣ�����ж��ǲ���WOW64����.
+    //#ifdef _WIN64 //为了这个API费时，为了加快速度，最好判断是不是WOW64进程.
     //    UserRoutine = GetUserFunctionAddressByPeb(UniqueProcess, g_DosKernelWow64Path.Buffer, "LoadLibraryExW");
     //#endif
     //}
@@ -181,7 +181,7 @@ NTSTATUS WINAPI GetLoadLibraryExWAddressCallBack(_In_ HANDLE UniqueProcessId, _I
             __leave;
         }
 
-        //if (PsIsSystemProcess(Process)) {//���̫�ࡣ
+        //if (PsIsSystemProcess(Process)) {//这个太多。
         //    Print(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "SystemProcess:%d, %s",
         //          HandleToUlong(UniqueProcessId), PsGetProcessImageFileName(Process));
         //    __leave;
@@ -201,7 +201,7 @@ NTSTATUS WINAPI GetLoadLibraryExWAddressCallBack(_In_ HANDLE UniqueProcessId, _I
             && LoadLibraryExWWow64Fn && LoadLibraryWWow64Fn
         #endif  
             ) {
-            status = STATUS_SUCCESS;//ֹͣ������
+            status = STATUS_SUCCESS;//停止遍历。
         }
     } __finally {
         ObDereferenceObject(Process);
@@ -225,9 +225,9 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
                         _In_ PIMAGE_INFO ImageInfo
 )
 /*
-��ʱ�ܼ�ص���ע���DLL��
+此时能监控到被注入的DLL。
 
-���ʱ���ж�ע��ɹ������������ĵ�IsCanInject�����ж�RtlCreateUserThread��׼ȷ�����ţ����ǷѾ�����ʱ��
+这个时机判断注入成功（进程上下文的IsCanInject）比判断RtlCreateUserThread更准确，可信，但是费劲，费时。
 */
 {
     if (ImageInfo->SystemModeImage) {
@@ -261,7 +261,7 @@ VOID ImageNotifyRoutine(_In_opt_ PUNICODE_STRING FullImageName,
     PPROCESS_CONTEXT Context = GetProcessContext(ProcessId);
     if (Context) {
         if (!Context->IsInjected) {//Context->IsCanInject && 
-            InjectOneProcess(ProcessId, NULL);//�ܻ�ɹ��İɣ���ѡ��ʱ���ˣ�ʧ����Ҳ����ν��
+            InjectOneProcess(ProcessId, NULL);//总会成功的吧！不选择时机了，失败了也无所谓。
         }
     }
 

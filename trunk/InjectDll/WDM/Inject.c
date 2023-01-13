@@ -11,27 +11,27 @@ NTSTATUS WINAPI InjectOneThread(_In_ PCLIENT_ID Cid, _In_opt_ PVOID Context)
 {
     UNREFERENCED_PARAMETER(Context);
 
-    //   ֻע��һ�Ρ�  ���۲죺5�����̵߳ĵȴ�״̬������Ķ���û���ҵ���THREAD_ALERT == 4
-    //   ע�⣺ApcState��Alerted��Alertable�⼸����Ա�Ĳ�ͬ��
+    //   只注入一次。  经观察：5就是线程的等待状态，具体的定义没有找到。THREAD_ALERT == 4
+    //   注意：ApcState，Alerted，Alertable这几个成员的不同。
     //if (5 == psti->ThreadState && (g_b == 1)) 
     {
-        //ע�⣬��������ˣ���ʱ���л�δ֪�������Ҫ���룬������Ҫ�����ӣ�������ʮ���ӣ�
-        //����ļ���Сʱ���߼��켸ҹ��������Զ�������У��磺�����������̵߳�״̬�����ϡ�
+        //注意，这里插入了，何时运行还未知：快的需要几秒，慢的需要及分钟，甚至几十分钟，
+        //更深的几个小时或者几天几夜，甚至永远不会运行，如：不触发或者线程的状态不符合。
         QueueApcThread(Cid);
     }
 
-    return STATUS_UNSUCCESSFUL;//����������
+    return STATUS_UNSUCCESSFUL;//继续遍历。
 }
 
 
 NTSTATUS InjectAllThread(__in HANDLE UniqueProcessId)
 /*
-ע��ǰ��ע�����
-1.�ܲ��ܴ򿪽��̡�
-2.������û���û��ռ䡣
-3.��X64��Ҫ�������ǲ���WOW64���̡�
-4.����.net��java�ȳ���Ҫ��Ҫע�롣
-5.���ﲻ����WSL�µ�linux���̡�
+注入前的注意事项：
+1.能不能打开进程。
+2.进程有没有用户空间。
+3.在X64下要先区分是不是WOW64进程。
+4.对于.net和java等程序要不要注入。
+5.这里不处理WSL下的linux进程。
 */
 {
     EnumThread(UniqueProcessId, InjectOneThread, NULL);
@@ -47,22 +47,22 @@ NTSTATUS InjectDllByCreateUserThread(_In_ HANDLE Process,
 )
 /*
 
-ע�⣺WOW64�Ĵ�����
+注意：WOW64的处理。
 "\\SystemRoot\\System32\\kernel32.dll"
 "\\SystemRoot\\SysWOW64\\kernel32.dll"
 
-��̾��
-��ô���ɺϡ�
-PUSER_THREAD_START_ROUTINE��LoadLibraryW��ԭ�;�Ȼһ�¡�
-���ԣ���ʡȥ����Ӧ�ò������ִ���ڴ�Ĳ�����
-��Ȼ������Ǹ��ƴ��루���Բ���shellcode����ȻҪ֧��WOW64����Ӧ�ò�Ĳ�����
-������˵shellcode�ˡ�
+感叹！
+多么的巧合。
+PUSER_THREAD_START_ROUTINE和LoadLibraryW的原型竟然一致。
+所以，这省去了在应用层申请可执行内存的操作。
+当然更多的是复制代码（可以不是shellcode，当然要支持WOW64）到应用层的操作。
+更不用说shellcode了。
 
-ע�⣺WOW64�Ĳ����Ĵ�С���磺ָ���size_t�ȡ�
+注意：WOW64的参数的大小，如：指针和size_t等。
 
-DllPullPath���ڵ��ڴ���Ӧ�ò�ġ�
+DllPullPath所在的内存是应用层的。
 
-ֻ��ע�룬���ܶ�����¡�
+只管注入，不管多余的事。
 */
 {
     NTSTATUS Status = STATUS_SUCCESS;    
@@ -72,7 +72,7 @@ DllPullPath���ڵ��ڴ���Ӧ�ò�ġ�
         return STATUS_UNSUCCESSFUL;
     }
 
-    PUSER_THREAD_START_ROUTINE LoadLibraryW = NULL;//LoadLibraryW�ĵ�ַ��
+    PUSER_THREAD_START_ROUTINE LoadLibraryW = NULL;//LoadLibraryW的地址。
     if (IsWow64Process(Process)) {
         LoadLibraryW = (PUSER_THREAD_START_ROUTINE)LoadLibraryWWow64Fn;
     } else {
@@ -122,7 +122,7 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
             __leave;
         }
 
-        //if (PsIsSystemProcess(Process)) {//���̫�ࡣ
+        //if (PsIsSystemProcess(Process)) {//这个太多。
         //    Print(DPFLTR_DEFAULT_ID, DPFLTR_WARNING_LEVEL, "SystemProcess:%d, %s",
         //          HandleToUlong(UniqueProcessId), PsGetProcessImageFileName(Process));
         //    __leave;
@@ -155,7 +155,7 @@ NTSTATUS WINAPI InjectOneProcess(_In_ HANDLE UniqueProcessId, _In_opt_ PVOID Con
         ObDereferenceObject(Process);
     }
 
-    return STATUS_UNSUCCESSFUL;//����������
+    return STATUS_UNSUCCESSFUL;//继续遍历。
 }
 
 

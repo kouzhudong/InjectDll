@@ -7,7 +7,7 @@ VOID FreeUserMemory(_In_ PPROCESS_CONTEXT Context)
 {
     PEPROCESS Process = NULL;
     HANDLE  Handle = 0;
-    PVOID DllFullPath = NULL;//�����ƶ�Ϊ0�����򷵻ز������� 
+    PVOID DllFullPath = NULL;//必须制定为0，否则返回参数错误。 
 
     __try {
         if (!Context) {
@@ -57,7 +57,7 @@ VOID FreeUserMemory(_In_ PPROCESS_CONTEXT Context)
 
 VOID ThreadNotifyRoutine(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Create)
 /*
-Ŀ�ģ�ע����߳̽���ʱ���ͷ������Ӧ�ò���ڴ档
+目的：注入的线程结束时，释放申请的应用层的内存。
 */
 {
     PPROCESS_CONTEXT Context = GetProcessContext(ProcessId);
@@ -71,14 +71,14 @@ VOID ThreadNotifyRoutine(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLE
     }
 
     if (Create) {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: ע����߳�%p����", ThreadId);//���û������
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%p启动", ThreadId);//这个没触发？
 
         PROCESS_CONTEXT Temp = {0};
         Temp.Pid = ProcessId;
         Temp.IsInjected = TRUE;
         UpdateProcessContext(&Temp);
     } else {
-        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: ע����߳�%d����", HandleToUlong(ThreadId));
+        PrintEx(DPFLTR_DEFAULT_ID, DPFLTR_INFO_LEVEL, "Info: 注入的线程%d结束", HandleToUlong(ThreadId));
 
         FreeUserMemory(Context);
 
