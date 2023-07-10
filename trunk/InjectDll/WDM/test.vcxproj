@@ -212,6 +212,9 @@
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies);$(ConvertedTargetLibs);$(ConvertedUMLIBS);$(solutionDir)x64\Debug\libdrv.lib;$(DDK_LIB_PATH)\Ntstrsafe.lib;$(DDK_LIB_PATH)\fltMgr.lib</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings);$([MSBuild]::Unescape($(DisableWarningLevels)));4566 </DisableSpecificWarnings>
+    </ClCompile>
   </ItemDefinitionGroup>
   <!-- The WrappedTaskItems label is used by the conversion tool to identify the location where items 
         associated with wrapped tasks will reside.-->
